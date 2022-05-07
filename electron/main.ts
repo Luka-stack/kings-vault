@@ -8,8 +8,9 @@ let mainWindow: Electron.BrowserWindow | null;
 function createWindow() {
   // Create the browser window.electron
   mainWindow = new BrowserWindow({
-    height: 600,
-    width: 800,
+    width: 960,
+    height: 540,
+    resizable: false,
     webPreferences: {
       //   nodeIntegration: true,
       preload: path.join(__dirname, 'preload.js'),
