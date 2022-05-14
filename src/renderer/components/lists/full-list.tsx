@@ -1,5 +1,4 @@
 import {
-  faArrowLeft,
   faCopy,
   faEdit,
   faMagnifyingGlass,
@@ -8,7 +7,6 @@ import {
   faUser,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useNavigate } from 'react-router-dom';
 
 const passwords = [
   {
@@ -42,25 +40,12 @@ const passwords = [
 ];
 
 const FullList = () => {
-  const navigate = useNavigate();
-
-  const toLandingPage = () => {
-    navigate('/');
-  };
-
   return (
-    <div className="w-screen p-4">
-      <i
-        className="absolute text-lg not-italic font-normal text-white cursor-pointer font- hover:text-ksv-blue-100"
-        onClick={toLandingPage}
-      >
-        <FontAwesomeIcon icon={faArrowLeft} /> Back
-      </i>
-
-      <div className="flex mt-12">
+    <div className="w-full p-4">
+      <div className="flex mt-10">
         <div className="relative flex">
           <input
-            className="h-8 py-1 pl-2 pr-8 text-sm font-medium rounded-lg w-96 text-ksv-light-gray bg-ksv-black bg-none focus:outline-none focus:ring-1 focus:ring-black placeholder:text-ksv-light-gray placeholder:text-sm"
+            className="h-8 py-1 pl-2 pr-8 text-sm font-medium border-none rounded-lg w-96 text-ksv-light-gray bg-ksv-black bg-none focus:outline-none focus:ring-1 focus:ring-black placeholder:text-ksv-light-gray placeholder:text-sm"
             type={'text'}
             placeholder="Search"
           />

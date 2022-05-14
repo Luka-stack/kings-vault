@@ -1,7 +1,14 @@
 import { faKey, faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useNavigate } from 'react-router-dom';
 
 const AccountForm = () => {
+  const navigate = useNavigate();
+
+  const login = () => {
+    navigate('/user');
+  };
+
   return (
     <div className="flex justify-center w-2/5">
       <div>
@@ -11,7 +18,7 @@ const AccountForm = () => {
         <form className="mt-[5.5rem]">
           <div className="relative flex">
             <input
-              className="h-8 py-1 pl-2 text-sm font-medium rounded-lg pr-7 w-72 text-ksv-light-gray bg-ksv-black bg-none focus:outline-none focus:ring-1 focus:ring-black placeholder:text-ksv-light-gray placeholder:text-sm"
+              className="h-8 py-1 pl-2 text-sm font-medium border-none rounded-lg pr-7 w-72 text-ksv-light-gray bg-ksv-black bg-none focus:outline-none focus:ring-1 focus:ring-black placeholder:text-ksv-light-gray placeholder:text-sm"
               type={'text'}
               placeholder="Username"
             />
@@ -21,7 +28,7 @@ const AccountForm = () => {
           </div>
           <div className="relative flex mt-6">
             <input
-              className="h-8 py-1 pl-2 pr-8 text-sm font-medium rounded-lg w-72 text-ksv-light-gray bg-ksv-black bg-none focus:outline-none focus:ring-1 focus:ring-black placeholder:text-ksv-light-gray placeholder:text-sm"
+              className="h-8 py-1 pl-2 pr-8 text-sm font-medium border-none rounded-lg w-72 text-ksv-light-gray bg-ksv-black bg-none focus:outline-none focus:ring-1 focus:ring-black placeholder:text-ksv-light-gray placeholder:text-sm"
               type={'password'}
               placeholder="Password"
             />
@@ -33,7 +40,10 @@ const AccountForm = () => {
             Wrong username
           </p>
           <div className="mt-6">
-            <button className="h-8 p-1 text-sm font-medium text-white rounded-full w-72 bg-ksv-gray-500 hover:bg-ksv-gray-300">
+            <button
+              onClick={login}
+              className="h-8 p-1 text-sm font-medium text-white rounded-full w-72 bg-ksv-gray-500 hover:bg-ksv-gray-300"
+            >
               Log In
             </button>
           </div>

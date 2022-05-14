@@ -1,9 +1,10 @@
 import { MemoryRouter as Router, Route, Routes } from 'react-router-dom';
 
-import AccountForm from './forms/AccountForm';
-import PasswordForm from './forms/PasswordForm';
-import FullList from './public-list/FullList';
-import PartialList from './public-list/PartialList';
+import PublicView from 'renderer/pages/public-view';
+import PasswordForm from './forms/password-form';
+import FullList from './lists/full-list';
+import UserView from 'renderer/pages/user-view';
+import PublicListView from 'renderer/pages/public-list-view';
 
 function App() {
   return (
@@ -11,18 +12,12 @@ function App() {
       <div className="flex h-screen bg-transparent opacity-100">
         <Router>
           <Routes>
-            <Route
-              path="/"
-              element={
-                <>
-                  <AccountForm />
-                  <div className="my-auto border-l border-white h-5/6"></div>
-                  <PartialList />
-                </>
-              }
-            />
-            <Route path="/public-list" element={<FullList />} />
+            <Route path="/" element={<PublicView />} />
+            <Route path="/public-list" element={<PublicListView />} />
             <Route path="/new-password" element={<PasswordForm />} />
+            <Route path="/user" element={<UserView />}>
+              <Route index element={<FullList />} />
+            </Route>
           </Routes>
         </Router>
       </div>

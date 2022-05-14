@@ -41,7 +41,9 @@ const PartialList = () => {
 
   const editPassword = () => {};
 
-  const createNewPassword = () => {};
+  const createNewPassword = () => {
+    navigate('/new-password');
+  };
 
   const openFullList = () => {
     navigate('/public-list');
@@ -58,21 +60,21 @@ const PartialList = () => {
           <div className="flex">
             <div className="relative flex">
               <input
-                className="h-8 py-1 pl-2 pr-8 text-sm font-medium rounded-lg w-96 text-ksv-light-gray bg-ksv-black bg-none focus:outline-none focus:ring-1 focus:ring-black placeholder:text-ksv-light-gray placeholder:text-sm"
-                type={'text'}
+                className="h-8 py-1 pl-2 pr-8 text-sm font-medium border-none rounded-lg w-96 text-ksv-light-gray bg-ksv-black bg-none focus:outline-none focus:ring-1 focus:ring-black placeholder:text-ksv-light-gray placeholder:text-sm"
+                type="text"
                 placeholder="Search"
               />
 
               <i className="absolute right-0 flex items-center h-8 px-2 rounded-tr-lg rounded-br-lg cursor-pointer bg-ksv-black hover:bg-ksv-gray-700">
-                <FontAwesomeIcon icon={faMagnifyingGlass} color={'white'} />
+                <FontAwesomeIcon icon={faMagnifyingGlass} color="white" />
               </i>
             </div>
 
             <i className="flex items-center h-8 p-2 ml-6 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
-              <FontAwesomeIcon icon={faUser} color={'white'} />
+              <FontAwesomeIcon icon={faUser} color="white" />
             </i>
             <i className="flex items-center h-8 p-2 ml-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
-              <FontAwesomeIcon icon={faTag} color={'white'} />
+              <FontAwesomeIcon icon={faTag} color="white" />
             </i>
           </div>
 
@@ -98,13 +100,13 @@ const PartialList = () => {
 
                     <div className="flex mt-2">
                       <i className="flex items-center h-8 p-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
-                        <FontAwesomeIcon icon={faCopy} color={'white'} />
+                        <FontAwesomeIcon icon={faCopy} color="white" />
                       </i>
                       <i className="flex items-center h-8 p-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
-                        <FontAwesomeIcon icon={faEdit} color={'white'} />
+                        <FontAwesomeIcon icon={faEdit} color="white" />
                       </i>
                       <i className="flex items-center h-8 p-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
-                        <FontAwesomeIcon icon={faTrash} color={'white'} />
+                        <FontAwesomeIcon icon={faTrash} color="white" />
                       </i>
                     </div>
                   </div>
