@@ -7,9 +7,13 @@ import {
   faUser,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import DropDown from '../dropdown';
 
 const passwords = [
   {
+    id: 1,
     label: 'PayPal',
     passwrod: '*****',
     color: 'green', // strong
@@ -17,6 +21,7 @@ const passwords = [
     age: '2 days',
   },
   {
+    id: 2,
     label: 'Ipko',
     passwrod: '*****',
     color: 'orange', // medium
@@ -24,6 +29,7 @@ const passwords = [
     age: '1 year',
   },
   {
+    id: 3,
     label: 'Steam',
     passwrod: '*****',
     color: 'red', // waek
@@ -31,6 +37,7 @@ const passwords = [
     age: '2 months',
   },
   {
+    id: 4,
     label: 'GitHub',
     passwrod: '*****',
     color: 'green',
@@ -39,7 +46,61 @@ const passwords = [
   },
 ];
 
-const FullList = () => {
+const STRENGTH_OPTIONS = ['All', 'Weak', 'Medium', 'Strong'];
+const AGE_OPTIONS = ['All', '< Week', '< Month', '< Year'];
+const ORDER_OPTIONS = ['Age', 'Label', 'Strength'];
+
+interface FullListProps {
+  isPublic: boolean;
+}
+
+const FullList: React.FC<FullListProps> = ({ isPublic }) => {
+  const [queryStrength, setQueryStrength] = useState(STRENGTH_OPTIONS[0]);
+  const [queryAge, setQueryAge] = useState(AGE_OPTIONS[0]);
+  const [queryOrder, setQueryOrder] = useState(ORDER_OPTIONS[0]);
+
+  const navigate = useNavigate();
+
+  const generatedPasswords = passwords.map((password) => (
+    <>
+      <div className="ksv--pwd-item" key={password.id}>
+        <div className="flex justify-between">
+          <div>
+            <h3 className="flex font-medium text-white">{password.label}</h3>
+            <p className="mt-1 font-light cursor-pointer text-ksv-light-gray">
+              {password.passwrod}
+            </p>
+          </div>
+
+          <div className="flex flex-row">
+            <div className="flex-col items-center hidden h-8 p-2 mr-6 text-xs font-medium w-fit text-neutral-400 ksv--display-flex">
+              <p>strength</p>
+              <p className={getPasswordStrenghtColor(password.strength)}>
+                {password.strength}
+              </p>
+            </div>
+            <div className="flex-col items-center hidden h-8 p-2 mr-5 text-xs font-medium w-28 text-neutral-400 ksv--display-flex">
+              <p>age</p>
+              <p>{password.age}</p>
+            </div>
+
+            <i className="flex items-center h-8 p-2 mt-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
+              <FontAwesomeIcon icon={faCopy} color={'white'} />
+            </i>
+            <i className="flex items-center h-8 p-2 mt-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
+              <FontAwesomeIcon icon={faEdit} color={'white'} />
+            </i>
+            <i className="flex items-center h-8 p-2 mt-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
+              <FontAwesomeIcon icon={faTrash} color={'white'} />
+            </i>
+          </div>
+        </div>
+
+        <hr className="mx-auto" />
+      </div>
+    </>
+  ));
+
   return (
     <div className="w-full p-4">
       <div className="flex mt-10">
@@ -55,73 +116,66 @@ const FullList = () => {
           </i>
         </div>
 
-        <i className="flex items-center h-8 p-2 ml-6 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
-          <FontAwesomeIcon icon={faUser} color={'white'} />
-        </i>
-        <i className="flex items-center h-8 p-2 ml-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
-          <FontAwesomeIcon icon={faTag} color={'white'} />
-        </i>
+        {isPublic && (
+          <>
+            <i className="flex items-center h-8 p-2 ml-6 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
+              <FontAwesomeIcon icon={faUser} color={'white'} />
+            </i>
+            <i className="flex items-center h-8 p-2 ml-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
+              <FontAwesomeIcon icon={faTag} color={'white'} />
+            </i>
+          </>
+        )}
       </div>
 
       <div className="flex justify-between mt-4">
-        <div className="flex">
-          <div className="px-3 py-0.5 mr-5 text-sm text-white rounded-full cursor-pointer w-max bg-ksv-gray-500 hover:bg-ksv-gray-300">
-            Order: Desc
-          </div>
-          <div className="px-3 py-0.5 mr-5 text-sm text-white rounded-full cursor-pointer w-max bg-ksv-gray-500 hover:bg-ksv-gray-300">
-            Strength: All
-          </div>
-          <div className="px-3 py-0.5 text-sm text-white rounded-full cursor-pointer w-max bg-ksv-gray-500 hover:bg-ksv-gray-300">
-            Age: All
-          </div>
-        </div>
         <div className="">
-          <button className="text-white bg-ksv-blue-500 px-3 py-0.5 text-sm rounded-full hover:bg-ksv-blue-700">
+          <button
+            className="text-white bg-ksv-blue-500 px-3 py-0.5 text-sm rounded-full hover:bg-ksv-blue-700"
+            onClick={() => navigate('/new-password')}
+          >
             Create password
           </button>
+        </div>
+        <div className="right-0 flex">
+          <DropDown
+            label="Strength"
+            option={queryStrength}
+            options={STRENGTH_OPTIONS}
+            setOption={setQueryStrength}
+          />
+          <DropDown
+            label="Age"
+            option={queryAge}
+            options={AGE_OPTIONS}
+            setOption={setQueryAge}
+          />
+          <DropDown
+            label="Order"
+            option={queryOrder}
+            options={ORDER_OPTIONS}
+            setOption={setQueryOrder}
+          />
         </div>
       </div>
 
       <div className="flex-row w-full p-3 mt-4 space-y-2 overflow-y-auto rounded-lg h-80 bg-ksv-black">
-        {passwords.map((password) => (
-          <>
-            <div className="ksv--pwd-item">
-              <div className="flex justify-between">
-                <div>
-                  <h3 className="flex font-medium text-white">
-                    {password.label}
-                  </h3>
-                  <p className="mt-1 font-light cursor-pointer text-ksv-light-gray">
-                    {password.passwrod}
-                  </p>
-                </div>
-
-                <div className="flex mt-2">
-                  <i className="items-center hidden h-8 p-2 mr-6 text-xs not-italic font-light rounded-lg text-neutral-400 ksv--display-flex">
-                    {password.strength}
-                  </i>
-                  <i className="items-center hidden h-8 p-2 mr-6 text-xs not-italic font-light rounded-lg text-neutral-400 ksv--display-flex">
-                    {password.age}
-                  </i>
-                  <i className="flex items-center h-8 p-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
-                    <FontAwesomeIcon icon={faCopy} color={'white'} />
-                  </i>
-                  <i className="flex items-center h-8 p-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
-                    <FontAwesomeIcon icon={faEdit} color={'white'} />
-                  </i>
-                  <i className="flex items-center h-8 p-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
-                    <FontAwesomeIcon icon={faTrash} color={'white'} />
-                  </i>
-                </div>
-              </div>
-
-              <hr className="mx-auto" />
-            </div>
-          </>
-        ))}
+        {generatedPasswords}
       </div>
     </div>
   );
+};
+
+const getPasswordStrenghtColor = (strength: string) => {
+  if (strength === 'weak') {
+    return 'text-red-600';
+  }
+
+  if (strength === 'medium') {
+    return 'text-yellow-600';
+  }
+
+  return 'text-green-600';
 };
 
 export default FullList;

@@ -23,7 +23,6 @@ export default class AppUpdater {
 }
 
 let mainWindow: BrowserWindow | null = null;
-let passwordWindow: BrowserWindow | null = null;
 
 ipcMain.on('password:new', async (event, arg) => {
   console.log(event, arg);
@@ -72,7 +71,7 @@ const createWindow = async () => {
     show: false,
     width: 960,
     height: 540,
-    icon: getAssetPath('icon.png'),
+    icon: getAssetPath('crown2.png'),
     resizable: false,
     webPreferences: {
       preload: app.isPackaged

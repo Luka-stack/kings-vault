@@ -5,7 +5,9 @@ const UserView = () => {
   return (
     <div className="flex w-screen">
       <Navbar />
-      <Outlet />
+      <div className="w-full">
+        <Outlet />
+      </div>
     </div>
   );
 };

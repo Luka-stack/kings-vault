@@ -51,7 +51,7 @@ const PasswordForm = () => {
   const navigate = useNavigate();
 
   const goBack = () => {
-    navigate('/');
+    navigate(-1);
   };
 
   const updateLength = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -145,7 +145,7 @@ const PasswordForm = () => {
         Create Password
       </h1>
 
-      <main className="mt-[5.5rem] flex w-screen justify-center">
+      <main className="flex justify-center w-screen mt-14">
         <section className="w-2/5 ">
           <form className="w-fit">
             <div className="relative flex">
@@ -182,9 +182,9 @@ const PasswordForm = () => {
               Password are not the same
             </p>
             <div className="h-1 mt-6 bg-white rounded-full h">
-              <div className="w-1/5 h-full bg-orange-400 rounded-full" />
+              <div className="w-3/5 h-full bg-yellow-600 rounded-full" />
             </div>
-            <p className="text-xs font-normal text-orange-400">
+            <p className="text-xs font-normal text-yellow-600">
               Password Strength: Medium
             </p>
             <div className="mt-6">

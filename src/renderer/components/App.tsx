@@ -5,6 +5,7 @@ import PasswordForm from './forms/password-form';
 import FullList from './lists/full-list';
 import UserView from 'renderer/pages/user-view';
 import PublicListView from 'renderer/pages/public-list-view';
+import UserSettings from 'renderer/pages/user-settings';
 
 function App() {
   return (
@@ -16,7 +17,12 @@ function App() {
             <Route path="/public-list" element={<PublicListView />} />
             <Route path="/new-password" element={<PasswordForm />} />
             <Route path="/user" element={<UserView />}>
-              <Route index element={<FullList />} />
+              <Route index element={<FullList isPublic={false} />} />
+              <Route
+                path="/user/public"
+                element={<FullList isPublic={true} />}
+              />
+              <Route path="/user/settings" element={<UserSettings />} />
             </Route>
           </Routes>
         </Router>
