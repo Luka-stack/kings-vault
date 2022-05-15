@@ -35,9 +35,9 @@ module.exports = {
       },
       backgroundImage: {
         default:
-          "linear-gradient(0deg, rgba(82, 85, 97, 0.75), rgba(82, 85, 97, 0.75)), url('/imgs/background.jpg')",
+          "linear-gradient(0deg, rgba(82, 85, 97, 0.75), rgba(82, 85, 97, 0.75)), url('/src/img/background.jpg')",
       },
     },
   },
-  plugins: [],
+  plugins: [require('@tailwindcss/forms')],
 };
