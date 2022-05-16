@@ -1,18 +1,9 @@
-/* eslint global-require: off, no-console: off, promise/always-return: off */
-
-/**
- * This module executes inside of electron's main process. You can start
- * electron renderer process from here and communicate with the other processes
- * through IPC.
- *
- * When running `npm run build` or `npm run build:main`, this file is compiled to
- * `./src/main.js` using webpack. This gives us some performance wins.
- */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import { resolveHtmlPath } from './util';
+import { DatabaseConnector } from './database/database-connector';
 
 export default class AppUpdater {
   constructor() {
@@ -22,12 +13,30 @@ export default class AppUpdater {
   }
 }
 
-let mainWindow: BrowserWindow | null = null;
+const tmpSqlFile = 'D:\\Programming\\projects\\king-vault\\.kingsvault.sqlite3';
+const database = new DatabaseConnector(tmpSqlFile);
 
-ipcMain.on('password:new', async (event, arg) => {
-  console.log(event, arg);
-  // event.reply('ipc-example', msgTemplate('pong'));
-});
+// const sqlite3 = sqlite.verbose();
+// const db = new sqlite3.Database(tmpSqlFile);
+// execSync('attrib +h ' + tmpSqlFile);
+
+// db.serialize(() => {
+//   db.run('CREATE TABLE lorem (info TEXT)');
+
+//   const stmt = db.prepare('INSERT INTO lorem VALUES (?)');
+//   for (let i = 0; i < 10; i += 1) {
+//     stmt.run(`Ipsum ${i}`);
+//   }
+//   stmt.finalize();
+
+//   db.each('SELECT rowid AS id, info FROM lorem', (_err, row) => {
+//     console.log(`${row.id}: ${row.info}`);
+//   });
+// });
+
+// db.close();
+
+let mainWindow: BrowserWindow | null = null;
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
