@@ -1,5 +1,14 @@
 import { DbField } from '.';
 
+export interface User {
+  id?: number;
+  username: string;
+  password: string;
+  strength: string;
+  token: string;
+  lastModified?: string;
+}
+
 const FIELDS: DbField[] = [
   {
     name: 'id',
@@ -7,7 +16,7 @@ const FIELDS: DbField[] = [
   },
   {
     name: 'username',
-    type: 'TEXT',
+    type: 'TEXT UNIQUE',
   },
   {
     name: 'password',
@@ -27,14 +36,34 @@ const FIELDS: DbField[] = [
   },
 ];
 
-interface UserEntity {
-  table: string;
-  fields: DbField[];
-}
+const createTable = (): string => {
+  let base = `CREATE TABLE ${UserRepository.table}`;
+  const columns = FIELDS.map((field) => `${field.name} ${field.type}`);
 
-export const UserDatabase: UserEntity = {
-  table: 'users',
-  fields: FIELDS,
+  return `${base} (${columns.join(', ')})`;
 };
 
-export class User {}
+const createUser = (user: User): string => {
+  const fields = FIELDS.slice(1).map((field) => field.name);
+  let base = `INSERT INTO ${UserRepository.table} (${fields})`;
+
+  let values: string[] = [];
+  values.push(`'${user.username}'`);
+  values.push(`'${user.password}'`);
+  values.push(`'${user.strength}'`);
+  values.push(`datetime('now', 'localtime')`);
+  values.push(`'${user.token!}'`);
+
+  return `${base} VALUES(${values})`;
+};
+
+const findOne = (username: string) => {
+  return `SELECT * FROM ${UserRepository.table} WHERE username = ${username}`;
+};
+
+export const UserRepository = {
+  table: 'users',
+  createTableStmt: createTable,
+  createUserStmt: createUser,
+  findOneStmt: findOne,
+};

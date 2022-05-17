@@ -1,9 +1,9 @@
 import path from 'path';
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import { resolveHtmlPath } from './util';
-import { DatabaseConnector } from './database/database-connector';
+import { PersistentService } from './database/persistent-service';
 
 export default class AppUpdater {
   constructor() {
@@ -13,29 +13,7 @@ export default class AppUpdater {
   }
 }
 
-const tmpSqlFile = 'D:\\Programming\\projects\\king-vault\\.kingsvault.sqlite3';
-const database = new DatabaseConnector(tmpSqlFile);
-
-// const sqlite3 = sqlite.verbose();
-// const db = new sqlite3.Database(tmpSqlFile);
-// execSync('attrib +h ' + tmpSqlFile);
-
-// db.serialize(() => {
-//   db.run('CREATE TABLE lorem (info TEXT)');
-
-//   const stmt = db.prepare('INSERT INTO lorem VALUES (?)');
-//   for (let i = 0; i < 10; i += 1) {
-//     stmt.run(`Ipsum ${i}`);
-//   }
-//   stmt.finalize();
-
-//   db.each('SELECT rowid AS id, info FROM lorem', (_err, row) => {
-//     console.log(`${row.id}: ${row.info}`);
-//   });
-// });
-
-// db.close();
-
+let database: PersistentService | null = null;
 let mainWindow: BrowserWindow | null = null;
 
 if (process.env.NODE_ENV === 'production') {
@@ -117,6 +95,17 @@ const createWindow = async () => {
   new AppUpdater();
 };
 
+/// TODO: Extract
+const createDatabase = async () => {
+  const tmpSqlFile =
+    'D:\\Programming\\projects\\king-vault\\.kingsvault.sqlite3';
+  database = new PersistentService(tmpSqlFile, mainWindow!);
+
+  ipcMain.on('user:create', (event, args: string[]) => {
+    database!.createUser(args[0], args[1], args[2]);
+  });
+};
+
 /**
  * Add event listeners...
  */
@@ -132,7 +121,9 @@ app.on('window-all-closed', () => {
 app
   .whenReady()
   .then(() => {
-    createWindow();
+    createWindow().then(() => {
+      createDatabase();
+    });
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.

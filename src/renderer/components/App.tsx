@@ -6,8 +6,17 @@ import FullList from './lists/full-list';
 import UserView from 'renderer/pages/user-view';
 import PublicListView from 'renderer/pages/public-list-view';
 import UserSettings from 'renderer/pages/user-settings';
+import { useEffect } from 'react';
+import { useActions } from 'renderer/hooks/use-actions';
 
 function App() {
+  const { listenOnCreateUser } = useActions();
+
+  useEffect(() => {
+    console.log('Setting Listener: UseEffect');
+    listenOnCreateUser();
+  }, []);
+
   return (
     <div className="w-screen h-screen overflow-y-hidden bg-center bg-cover bg-default font-roboto">
       <div className="flex h-screen bg-transparent opacity-100">
