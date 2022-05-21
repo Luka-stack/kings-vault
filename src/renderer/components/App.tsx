@@ -13,7 +13,6 @@ function App() {
   const { listenOnCreateUser } = useActions();
 
   useEffect(() => {
-    console.log('Setting Listener: UseEffect');
     listenOnCreateUser();
   }, []);
 
@@ -24,7 +23,14 @@ function App() {
           <Routes>
             <Route path="/" element={<PublicView />} />
             <Route path="/public-list" element={<PublicListView />} />
-            <Route path="/new-password" element={<PasswordForm />} />
+            <Route
+              path="/new-password"
+              element={<PasswordForm edit={false} />}
+            />
+            <Route
+              path="/edit-password"
+              element={<PasswordForm edit={true} />}
+            />
             <Route path="/user" element={<UserView />}>
               <Route index element={<FullList isPublic={false} />} />
               <Route

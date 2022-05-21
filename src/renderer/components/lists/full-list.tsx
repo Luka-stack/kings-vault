@@ -1,3 +1,5 @@
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import {
   faCopy,
   faEdit,
@@ -7,9 +9,11 @@ import {
   faUser,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import DropDown from '../dropdown';
+
+dayjs.extend(relativeTime);
 
 const passwords = [
   {
@@ -59,7 +63,9 @@ const FullList: React.FC<FullListProps> = ({ isPublic }) => {
   const [queryAge, setQueryAge] = useState(AGE_OPTIONS[0]);
   const [queryOrder, setQueryOrder] = useState(ORDER_OPTIONS[0]);
 
-  const navigate = useNavigate();
+  useEffect(() => {
+    window.electron.ipcRenderer.sendMessage('passwd:findAll', []);
+  }, []);
 
   const generatedPasswords = passwords.map((password) => (
     <>
@@ -81,7 +87,7 @@ const FullList: React.FC<FullListProps> = ({ isPublic }) => {
             </div>
             <div className="flex-col items-center hidden h-8 p-2 mr-5 text-xs font-medium w-28 text-neutral-400 ksv--display-flex">
               <p>age</p>
-              <p>{password.age}</p>
+              <p>{dayjs(password.age).fromNow()}</p>
             </div>
 
             <i className="flex items-center h-8 p-2 mt-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
@@ -130,12 +136,11 @@ const FullList: React.FC<FullListProps> = ({ isPublic }) => {
 
       <div className="flex justify-between mt-4">
         <div className="">
-          <button
-            className="text-white bg-ksv-blue-500 px-3 py-0.5 text-sm rounded-full hover:bg-ksv-blue-700"
-            onClick={() => navigate('/new-password')}
-          >
-            Create password
-          </button>
+          <Link to="/new-password" state={{ type: 'passwd' }}>
+            <button className="text-white bg-ksv-blue-500 px-3 py-0.5 text-sm rounded-full hover:bg-ksv-blue-700">
+              Create password
+            </button>
+          </Link>
         </div>
         <div className="right-0 flex">
           <DropDown

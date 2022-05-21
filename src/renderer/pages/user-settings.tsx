@@ -1,30 +1,36 @@
-import { useNavigate } from 'react-router-dom';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
+import { Link } from 'react-router-dom';
+import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
 
-const LOGIN = 'Lukasz';
+dayjs.extend(relativeTime);
 
 const UserSettings = () => {
-  const navigate = useNavigate();
+  const user = useTypedSelector((state) => state.users.user!);
 
   return (
     <div className="w-full p-4 mt-10">
       {/* User Section */}
       <section className="flex">
         <div className="text-center text-white align-middle border-2 rounded-full w-36 h-36 text-9xl border-ksv-black text">
-          <p>{LOGIN.toUpperCase().slice(0, 1)}</p>
+          <p>{user.username.toUpperCase().slice(0, 1)}</p>
         </div>
         <div className="ml-10 text-white">
           <h3 className="mb-4 text-xl font-medium">Password</h3>
-          <p className="mb-1">Last Modified: 2 weeks ago</p>
+          <p className="mb-1">
+            Last Modified: {dayjs(user.modified).fromNow()}
+          </p>
           <p>
             Strengh:
-            <i className="ml-2 not-italic font-medium text-green-600">strong</i>
+            <i className="ml-2 not-italic font-medium text-green-600">
+              {user.strength}
+            </i>
           </p>
-          <button
-            className="w-48 px-3 py-1 mt-4 text-white rounded-full bg-ksv-blue-500 hover:bg-ksv-blue-700"
-            onClick={() => navigate('/new-password')}
-          >
-            Change Password
-          </button>
+          <Link to="/edit-password" state={{ type: 'user' }}>
+            <button className="w-48 px-3 py-1 mt-4 text-white rounded-full bg-ksv-blue-500 hover:bg-ksv-blue-700">
+              Change Password
+            </button>
+          </Link>
         </div>
       </section>
 

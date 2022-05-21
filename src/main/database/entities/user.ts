@@ -6,7 +6,7 @@ export interface User {
   password: string;
   strength: string;
   token: string;
-  lastModified?: string;
+  modified?: string;
 }
 
 const FIELDS: DbField[] = [
@@ -57,13 +57,22 @@ const createUser = (user: User): string => {
   return `${base} VALUES(${values})`;
 };
 
-const findOne = (username: string) => {
-  return `SELECT * FROM ${UserRepository.table} WHERE username = ${username}`;
+const findOne = (username: string, password: string): string => {
+  return `SELECT * FROM ${UserRepository.table} WHERE username = '${username}' AND password = '${password}'`;
+};
+
+const updateUser = (
+  username: string,
+  password: string,
+  strength: string
+): string => {
+  return `UPDATE ${UserRepository.table} SET password = '${password}', strength = '${strength}', modified = datetime('now', 'localtime') WHERE username = '${username}'`;
 };
 
 export const UserRepository = {
   table: 'users',
   createTableStmt: createTable,
   createUserStmt: createUser,
+  updateUserStmt: updateUser,
   findOneStmt: findOne,
 };

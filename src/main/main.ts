@@ -101,8 +101,26 @@ const createDatabase = async () => {
     'D:\\Programming\\projects\\king-vault\\.kingsvault.sqlite3';
   database = new PersistentService(tmpSqlFile, mainWindow!);
 
-  ipcMain.on('user:create', (event, args: string[]) => {
+  // user
+  ipcMain.on('user:create', (_event, args: string[]) => {
     database!.createUser(args[0], args[1], args[2]);
+  });
+
+  ipcMain.on('user:logIn', (_event, args: string[]) => {
+    database!.logIn(args[0], args[1]);
+  });
+
+  ipcMain.on('user:userUpdate', (_event, args: string[]) => {
+    database!.updateUser(args[0], args[1], args[2]);
+  });
+
+  // passwd
+  ipcMain.on('passwd:create', (_event, args: any[]) => {
+    database!.createPasswd(args[0], args[1]);
+  });
+
+  ipcMain.on('passwd:findAll', (_event, args: any[]) => {
+    database!.findAll();
   });
 };
 

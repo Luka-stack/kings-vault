@@ -4,13 +4,11 @@ import { User } from '../user';
 
 export interface UserState {
   user: User | null;
-  processing: boolean;
   error: string | null;
 }
 
 const initialState: UserState = {
   user: null,
-  processing: false,
   error: null,
 };
 
@@ -22,22 +20,19 @@ const reducer = (
     case ActionType.CREATE_USER:
       return {
         ...state,
-        processing: true,
         error: null,
       };
 
-    case ActionType.CREATE_USER_COMPLETE:
+    case ActionType.USER_FORM_COMPLETE:
       return {
         ...state,
-        processing: false,
         error: null,
         user: action.payload,
       };
 
-    case ActionType.CREATE_USER_ERROR:
+    case ActionType.USER_FORM_ERROR:
       return {
         ...state,
-        processing: false,
         error: action.payload,
       };
 

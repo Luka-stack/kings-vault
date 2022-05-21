@@ -1,8 +1,11 @@
 export enum ActionType {
   // accounts
+  LOG_IN = 'log_in',
   CREATE_USER = 'create_user',
-  CREATE_USER_COMPLETE = 'create_user_complete',
-  CREATE_USER_ERROR = 'create_user_error',
+  USER_FORM_COMPLETE = 'user_form_complete',
+  USER_FORM_ERROR = 'user_form_error',
+  USER_UPDATE = 'user_update',
+  USER_ERROR = 'user_error',
 
   // passwords
 }

@@ -1,6 +1,13 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
-export type Channels = 'user:create' | 'user:createResponse';
+export type Channels =
+  | 'user:create'
+  | 'user:formRes'
+  | 'user:logIn'
+  | 'user:userUpdate'
+  | 'passwd:create'
+  | 'passwd:findAll';
+
 contextBridge.exposeInMainWorld('electron', {
   ipcRenderer: {
     sendMessage(channel: Channels, args: unknown[]) {

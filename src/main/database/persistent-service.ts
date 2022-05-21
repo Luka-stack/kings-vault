@@ -4,6 +4,7 @@ import fs from 'fs';
 import { User, UserRepository } from './entities/user';
 import crypto from 'crypto';
 import { BrowserWindow, ipcMain } from 'electron';
+import { Password, PasswordRepository } from './entities/password';
 
 export class PersistentService {
   private _db!: sqlite.Database;
@@ -28,24 +29,39 @@ export class PersistentService {
   }
 
   initTables(db: sqlite.Database): void {
-    // create users table
-    db.run(
-      UserRepository.createTableStmt(),
-      (_: RunResult, err: Error | null) => {
-        if (err) {
-          // TODO: Implement error handling
-          console.log("Couldn't create users table", err);
+    db.parallelize(() => {
+      // create users table
+      db.run(
+        UserRepository.createTableStmt(),
+        (_: RunResult, err: Error | null) => {
+          if (err) {
+            // TODO: Implement error handling
+            console.log("Couldn't create users table", err);
+          }
         }
-      }
-    );
+      );
 
-    // create passwords table
+      // create passwords table
+      db.run(
+        PasswordRepository.createTableStmt(),
+        (_: RunResult, err: Error | null) => {
+          if (err) {
+            // TODO: Implement error handling
+            console.log("Couldn't create users table", err);
+          }
+        }
+      );
+    });
   }
+
+  // users
 
   createUser(username: string, password: string, strength: string): void {
     const token = uuid();
-    const hasher = crypto.createHmac('sha256', token);
-    const passwordHash = hasher.update(password).digest('base64');
+    const passwordHash = crypto
+      .createHash('sha256')
+      .update(password)
+      .digest('base64');
 
     const user: User = {
       username,
@@ -58,22 +74,125 @@ export class PersistentService {
     this._db.run(stmt, (result: any, err: Error | null) => {
       if (err) {
         // TODO: Implement error handling
-        console.log("Couldn't create user", err);
-        return;
+        return console.log("Couldn't create user", err);
       }
 
       if (result && result.errno) {
-        this.mainWindow.webContents.send('user:createResponse', [
+        return this.mainWindow.webContents.send('user:formRes', [
           'error',
           'Username has to bo unique',
         ]);
-        return;
       }
 
-      this.mainWindow.webContents.send('user:createResponse', [
-        'success',
-        user,
+      this.mainWindow.webContents.send('user:formRes', ['success', user]);
+    });
+  }
+
+  logIn(username: string, password: string): void {
+    const passwordHash = crypto
+      .createHash('sha256')
+      .update(password)
+      .digest('base64');
+
+    const stmt = UserRepository.findOneStmt(username, passwordHash);
+    this._db.all(stmt, (err: Error | null, result: any[]) => {
+      if (err) {
+        // TODO: Implement error handling
+        return console.log("Couldn't create user", err);
+      }
+
+      if (result.length) {
+        return this.mainWindow.webContents.send('user:formRes', [
+          'success',
+          result[0],
+        ]);
+      }
+
+      return this.mainWindow.webContents.send('user:formRes', [
+        'error',
+        'Wrong password or username',
       ]);
+    });
+  }
+
+  updateUser(username: string, password: string, strength: string): void {
+    const passwordHash = crypto
+      .createHash('sha256')
+      .update(password)
+      .digest('base64');
+    let stmt = UserRepository.updateUserStmt(username, passwordHash, strength);
+
+    this._db.serialize(() => {
+      this._db.run(stmt, (_result: any, err: Error | null) => {
+        if (err) {
+          // TODO: Implement error handling
+          return console.log("Couldn't create user", err);
+        }
+      });
+
+      stmt = UserRepository.findOneStmt(username, passwordHash);
+      this._db.all(stmt, (err: Error | null, result: any[]) => {
+        if (err) {
+          // TODO: Implement error handling
+          return console.log("Couldn't find user", err);
+        }
+
+        if (result.length) {
+          return this.mainWindow.webContents.send('user:formRes', [
+            'success',
+            result[0],
+          ]);
+        }
+      });
+    });
+  }
+
+  // passwords
+  createPasswd(
+    password: {
+      label: string;
+      password: string;
+      strength: string;
+      public: boolean;
+    },
+    user: { id: number; token: string }
+  ): void {
+    const passwordHash = crypto
+      .createHmac('sha256', user.token)
+      .update(password.password)
+      .digest('base64');
+
+    password.password = passwordHash;
+
+    const stmt = PasswordRepository.createPasswordStmt(password, user.id);
+    this._db.run(stmt, (result: any, err: Error | null) => {
+      if (err) {
+        // TODO: Implement error handling
+        return console.log("Couldn't create password", err);
+      }
+
+      console.log(result);
+
+      // if (result && result.errno) {
+      //   return this.mainWindow.webContents.send('user:formRes', [
+      //     'error',
+      //     'Username has to bo unique',
+      //   ]);
+      // }
+
+      // this.mainWindow.webContents.send('user:formRes', ['success', user]);
+    });
+  }
+
+  findAll(): void {
+    const stmt = PasswordRepository.findAllStmt();
+    this._db.all(stmt, (err: Error | null, result: any[]) => {
+      if (err) {
+        // TODO: Implement error handling
+        return console.log("Couldn't create user", err);
+      }
+
+      console.log(result);
     });
   }
 

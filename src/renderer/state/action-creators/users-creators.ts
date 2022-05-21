@@ -21,28 +21,43 @@ export const createUser = (
   };
 };
 
+export const logIn = (username: string, password: string) => {
+  return async (dispatch: Dispatch<Action>) => {
+    dispatch({
+      type: ActionType.LOG_IN,
+    });
+
+    window.electron.ipcRenderer.sendMessage('user:logIn', [username, password]);
+  };
+};
+
 export const listenOnCreateUser = () => {
   return async (dispatch: Dispatch<Action>) => {
-    console.log('Setting Listener: Creator');
+    window.electron.ipcRenderer.on('user:formRes', (...args: unknown[]) => {
+      const arg = args[0] as any[];
 
-    window.electron.ipcRenderer.on(
-      'user:createResponse',
-      (...args: unknown[]) => {
-        const arg = args[0] as string[];
-        console.log(arg);
-
-        if (arg[0] === 'error') {
-          dispatch({
-            type: ActionType.CREATE_USER_ERROR,
-            payload: arg[1] as string,
-          });
-        } else {
-          dispatch({
-            type: ActionType.CREATE_USER_COMPLETE,
-            payload: arg[1] as User,
-          });
-        }
+      if (arg[0] === 'error') {
+        dispatch({
+          type: ActionType.USER_FORM_ERROR,
+          payload: arg[1] as string,
+        });
+      } else {
+        dispatch({
+          type: ActionType.USER_FORM_COMPLETE,
+          payload: arg[1] as User,
+        });
       }
-    );
+    });
+  };
+};
+
+export const listenOnUpdateUser = () => {
+  return async (dispatch: Dispatch<Action>) => {
+    window.electron.ipcRenderer.on('user:userUpdate', (...args: unknown[]) => {
+      dispatch({
+        type: ActionType.USER_UPDATE,
+        payload: args[0] as User,
+      });
+    });
   };
 };

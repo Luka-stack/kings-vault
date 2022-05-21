@@ -1,7 +1,13 @@
-import { faArrowLeft, faKey, faTag } from '@fortawesome/free-solid-svg-icons';
+import {
+  faArrowLeft,
+  faKey,
+  faTag,
+  faUser,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
 
 const PASSWORD_SETTINGS = [
   {
@@ -43,7 +49,24 @@ const MIN_LENGTH = 1;
 const DEFAULT_LENGTH = 12;
 const MAX_LENGTH = 20;
 
-const PasswordForm = () => {
+interface Props {
+  edit: boolean;
+}
+
+const PasswordForm: React.FC<Props> = ({ edit }) => {
+  const { user } = useTypedSelector((state) => state.users);
+
+  const location = useLocation();
+  const { type, passwdObj } = location.state as {
+    type: string;
+    passwdObj?: any;
+  };
+
+  const [label, setLabel] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
+  const [mismatch, setMismatch] = useState<boolean>(false);
+
   const [length, setLength] = useState('');
   const [settings, setSettings] = useState(PASSWORD_SETTINGS);
   const [caseSettings, setCaseSettings] = useState(CASE_SETTINGS);
@@ -52,6 +75,46 @@ const PasswordForm = () => {
 
   const goBack = () => {
     navigate(-1);
+  };
+
+  const disabled =
+    label.trim().length === 0 ||
+    password.trim().length === 0 ||
+    confirmPassword.trim().length === 0;
+
+  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    if (password !== confirmPassword) {
+      return setMismatch(true);
+    }
+
+    if (edit) {
+      if (passwdObj) {
+        // EDIT PASSWORD
+      }
+
+      if (user) {
+        window.electron.ipcRenderer.sendMessage('user:userUpdate', [
+          user.username,
+          password,
+          'weak',
+        ]);
+      }
+
+      return goBack();
+    }
+
+    window.electron.ipcRenderer.sendMessage('passwd:create', [
+      {
+        label,
+        password,
+        strength: 'weak',
+        public: false,
+      },
+      { id: user!.id, token: user!.token },
+    ]);
+    return goBack();
   };
 
   const updateLength = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -98,6 +161,16 @@ const PasswordForm = () => {
     setCaseSettings(newSettings);
   };
 
+  useEffect(() => {
+    if (type === 'user') {
+      setLabel(user!.username);
+    }
+
+    if (passwdObj) {
+      console.log('Password Passed To Edit');
+    }
+  }, []);
+
   const generatePasswordSettings = settings.map((setting) => (
     <p
       key={setting.id}
@@ -142,26 +215,31 @@ const PasswordForm = () => {
       </i>
 
       <h1 className="mt-8 text-3xl font-bold text-center text-white">
-        Create Password
+        {edit ? 'Edit' : 'Create'} Password
       </h1>
 
       <main className="flex justify-center w-screen mt-14">
         <section className="w-2/5 ">
-          <form className="w-fit">
+          <form className="w-fit" onSubmit={(e) => onSubmit(e)}>
             <div className="relative flex">
               <input
                 className="h-8 py-1 pl-2 text-sm font-medium border-none rounded-lg pr-7 w-72 text-ksv-light-gray bg-ksv-black bg-none focus:outline-none focus:ring-1 focus:ring-black placeholder:text-ksv-light-gray placeholder:text-sm"
                 type={'text'}
+                value={label}
+                onChange={(e) => setLabel(e.target.value)}
                 placeholder="Label"
+                disabled={type === 'user'}
               />
               <i className="absolute right-0 flex items-center h-8 pl-1 pr-2 rounded-tr-lg rounded-br-lg bg-ksv-black">
-                <FontAwesomeIcon icon={faTag} color={'white'} />
+                <FontAwesomeIcon icon={user ? faUser : faTag} color={'white'} />
               </i>
             </div>
             <div className="relative flex mt-6">
               <input
                 className="h-8 py-1 pl-2 pr-8 text-sm font-medium border-none rounded-lg w-72 text-ksv-light-gray bg-ksv-black bg-none focus:outline-none focus:ring-1 focus:ring-black placeholder:text-ksv-light-gray placeholder:text-sm"
                 type={'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
                 placeholder="Password"
               />
               <i className="absolute right-0 flex items-center h-8 px-2 rounded-tr-lg rounded-br-lg cursor-pointer bg-ksv-black hover:bg-ksv-gray-700">
@@ -172,23 +250,33 @@ const PasswordForm = () => {
               <input
                 className="h-8 py-1 pl-2 pr-8 text-sm font-medium border-none rounded-lg w-72 text-ksv-light-gray bg-ksv-black bg-none focus:outline-none focus:ring-1 focus:ring-black placeholder:text-ksv-light-gray placeholder:text-sm"
                 type={'password'}
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm Password"
               />
               <i className="absolute right-0 flex items-center h-8 px-2 rounded-tr-lg rounded-br-lg cursor-pointer bg-ksv-black hover:bg-ksv-gray-700">
                 <FontAwesomeIcon icon={faKey} color={'white'} />
               </i>
             </div>
-            <p className="mt-3 text-sm font-medium text-red-500">
-              Password are not the same
-            </p>
+
+            {mismatch && (
+              <p className="mt-3 text-sm font-medium text-red-500">
+                Password are not the same
+              </p>
+            )}
+
             <div className="h-1 mt-6 bg-white rounded-full h">
               <div className="w-3/5 h-full bg-yellow-600 rounded-full" />
             </div>
             <p className="text-xs font-normal text-yellow-600">
               Password Strength: Medium
             </p>
+
             <div className="mt-6">
-              <button className="h-8 p-1 text-sm font-medium text-white rounded-full w-72 bg-ksv-blue-500 hover:bg-ksv-blue-700">
+              <button
+                className="h-8 p-1 text-sm font-medium text-white rounded-full w-72 bg-ksv-blue-500 hover:bg-ksv-blue-700"
+                disabled={disabled}
+              >
                 Create Account
               </button>
             </div>
