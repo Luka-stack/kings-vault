@@ -8,4 +8,5 @@ export enum ActionType {
   USER_ERROR = 'user_error',
 
   // passwords
+  PASSWDS_UPDATE = 'passwds_update',
 }

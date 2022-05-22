@@ -3,8 +3,8 @@ import { execSync } from 'child_process';
 import fs from 'fs';
 import { User, UserRepository } from './entities/user';
 import crypto from 'crypto';
-import { BrowserWindow, ipcMain } from 'electron';
-import { Password, PasswordRepository } from './entities/password';
+import { BrowserWindow } from 'electron';
+import { PasswordRepository } from './entities/password';
 
 export class PersistentService {
   private _db!: sqlite.Database;
@@ -153,7 +153,7 @@ export class PersistentService {
       label: string;
       password: string;
       strength: string;
-      public: boolean;
+      isPublic: boolean;
     },
     user: { id: number; token: string }
   ): void {
@@ -164,23 +164,97 @@ export class PersistentService {
 
     password.password = passwordHash;
 
-    const stmt = PasswordRepository.createPasswordStmt(password, user.id);
-    this._db.run(stmt, (result: any, err: Error | null) => {
-      if (err) {
-        // TODO: Implement error handling
-        return console.log("Couldn't create password", err);
-      }
+    let stmt: string;
+    this._db.serialize(() => {
+      stmt = PasswordRepository.createPasswordStmt(password, user.id);
+      this._db.run(stmt, (result: any, err: Error | null) => {
+        if (err) {
+          // TODO: Implement error handling
+          return console.log("Couldn't create password", err);
+        }
+      });
 
-      console.log(result);
+      stmt = PasswordRepository.findAllStmt();
+      this._db.all(stmt, (err: Error | null, result: any[]) => {
+        if (err) {
+          // TODO: Implement error handling
+          return console.log("Couldn't create user", err);
+        }
 
-      // if (result && result.errno) {
-      //   return this.mainWindow.webContents.send('user:formRes', [
-      //     'error',
-      //     'Username has to bo unique',
-      //   ]);
-      // }
+        if (result.length) {
+          return this.mainWindow.webContents.send('passwd:passwdsUpdate', [
+            result,
+          ]);
+        }
+      });
+    });
+  }
 
-      // this.mainWindow.webContents.send('user:formRes', ['success', user]);
+  updatePasswd(
+    password: {
+      id: number;
+      label: string;
+      password: string;
+      strength: string;
+      isPublic: boolean;
+    },
+    user: { id: number; token: string }
+  ): void {
+    const passwordHash = crypto
+      .createHmac('sha256', user.token)
+      .update(password.password)
+      .digest('base64');
+
+    password.password = passwordHash;
+
+    let stmt: string;
+    this._db.serialize(() => {
+      stmt = PasswordRepository.updatePasswordStmt(password);
+      this._db.run(stmt, (result: any, err: Error | null) => {
+        if (err) {
+          // TODO: Implement error handling
+          return console.log("Couldn't update password", err);
+        }
+      });
+
+      stmt = PasswordRepository.findAllStmt();
+      this._db.all(stmt, (err: Error | null, result: any[]) => {
+        if (err) {
+          // TODO: Implement error handling
+          return console.log("Couldn't update user", err);
+        }
+
+        if (result.length) {
+          return this.mainWindow.webContents.send('passwd:passwdsUpdate', [
+            result,
+          ]);
+        }
+      });
+    });
+  }
+
+  deletePasswd(id: number): void {
+    let stmt: string;
+    this._db.serialize(() => {
+      stmt = PasswordRepository.deletePasswordStmt(id);
+      this._db.run(stmt, (result: any, err: Error | null) => {
+        if (err) {
+          // TODO: Implement error handling
+          return console.log("Couldn't delete password", err);
+        }
+      });
+
+      stmt = PasswordRepository.findAllStmt();
+      this._db.all(stmt, (err: Error | null, result: any[]) => {
+        if (err) {
+          // TODO: Implement error handling
+          return console.log("Couldn't delete user", err);
+        }
+
+        return this.mainWindow.webContents.send('passwd:passwdsUpdate', [
+          result,
+        ]);
+      });
     });
   }
 
@@ -192,7 +266,7 @@ export class PersistentService {
         return console.log("Couldn't create user", err);
       }
 
-      console.log(result);
+      return this.mainWindow.webContents.send('passwd:passwdsUpdate', [result]);
     });
   }
 

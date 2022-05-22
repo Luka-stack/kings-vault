@@ -9,6 +9,18 @@
   display: block;
 }
 
+.strong {
+  @apply text-green-600;
+}
+
+.medium {
+  @apply text-yellow-600;
+}
+
+.weak {
+  @apply text-red-600;
+}
+
 #toggle-switch:checked {
   background-image: none;
 }

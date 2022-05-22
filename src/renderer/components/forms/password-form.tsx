@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
+import { Passwd } from 'renderer/state/passwd';
 
 const PASSWORD_SETTINGS = [
   {
@@ -57,10 +58,12 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
   const { user } = useTypedSelector((state) => state.users);
 
   const location = useLocation();
-  const { type, passwdObj } = location.state as {
+  const { type, passwd } = location.state as {
     type: string;
-    passwdObj?: any;
+    passwd?: Passwd;
   };
+
+  console.log(passwd);
 
   const [label, setLabel] = useState<string>('');
   const [password, setPassword] = useState<string>('');
@@ -90,8 +93,12 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
     }
 
     if (edit) {
-      if (passwdObj) {
-        // EDIT PASSWORD
+      if (passwd) {
+        window.electron.ipcRenderer.sendMessage('passwd:passwdUpdate', [
+          { id: passwd.id, label, password, strength: 'weak', isPublic: false },
+          { id: user!.id, token: user!.token },
+        ]);
+        return goBack();
       }
 
       if (user) {
@@ -110,7 +117,7 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
         label,
         password,
         strength: 'weak',
-        public: false,
+        isPublic: false,
       },
       { id: user!.id, token: user!.token },
     ]);
@@ -164,10 +171,12 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
   useEffect(() => {
     if (type === 'user') {
       setLabel(user!.username);
+      return;
     }
 
-    if (passwdObj) {
-      console.log('Password Passed To Edit');
+    if (passwd) {
+      setLabel(passwd.label);
+      setPassword(passwd.password);
     }
   }, []);
 
@@ -277,7 +286,7 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
                 className="h-8 p-1 text-sm font-medium text-white rounded-full w-72 bg-ksv-blue-500 hover:bg-ksv-blue-700"
                 disabled={disabled}
               >
-                Create Account
+                Save Password
               </button>
             </div>
           </form>

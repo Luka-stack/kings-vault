@@ -122,6 +122,14 @@ const createDatabase = async () => {
   ipcMain.on('passwd:findAll', (_event, args: any[]) => {
     database!.findAll();
   });
+
+  ipcMain.on('passwd:passwdUpdate', (_event, args: any[]) => {
+    database!.updatePasswd(args[0], args[1]);
+  });
+
+  ipcMain.on('passwd:passwdDelete', (_event, args: any[]) => {
+    database!.deletePasswd(args[0]);
+  });
 };
 
 /**

@@ -10,10 +10,11 @@ import { useEffect } from 'react';
 import { useActions } from 'renderer/hooks/use-actions';
 
 function App() {
-  const { listenOnCreateUser } = useActions();
+  const { listenOnCreateUser, listenOnPasswdsUpdate } = useActions();
 
   useEffect(() => {
     listenOnCreateUser();
+    listenOnPasswdsUpdate();
   }, []);
 
   return (

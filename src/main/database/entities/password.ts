@@ -6,7 +6,7 @@ export interface Password {
   label: string;
   password: string;
   strength: string;
-  public: boolean;
+  isPublic: boolean;
   modified?: string;
   user?: User;
 }
@@ -33,13 +33,13 @@ const FIELDS: DbField[] = [
     type: 'TEXT',
   },
   {
-    name: 'public',
+    name: 'isPublic',
     type: 'INTEGER',
   },
-  //   {
-  //     name: 'user_id',
-  //     type: 'INTEGER',
-  //   },
+  {
+    name: 'user_id',
+    type: 'INTEGER',
+  },
   {
     name: 'FOREIGN KEY(user_id)',
     type: `REFERENCES ${UserRepository.table}(id)`,
@@ -62,22 +62,34 @@ const createPassword = (password: Password, userId: number): string => {
   values.push(`'${password.password}'`);
   values.push(`'${password.strength}'`);
   values.push("datetime('now', 'localtime')");
-  values.push(password.public ? '1' : '0');
-  //   values.push(userId + '');
+  values.push(password.isPublic ? '1' : '0');
+  values.push(userId + '');
 
   return `${base} VALUES(${values})`;
 };
 
 const findAll = (): string => {
-  return `SELECT * FROM ${PasswordRepository.table} LEFT JOIN ${UserRepository.table} ON ${PasswordRepository.table}.user_id = ${UserRepository.table}.id`;
+  const passwdFields =
+    'passwds.id, passwds.label, passwds.password, passwds.strength, passwds.modified, passwds.isPublic';
+  const userFields = 'users.id as userId, users.username';
+
+  return `SELECT ${passwdFields}, ${userFields} FROM ${UserRepository.table} as users INNER JOIN ${PasswordRepository.table} as passwds ON passwds.user_id = users.id`;
 };
 
-const updatePassword = (
-  id: number,
-  label: string,
-  password: string
-): string => {
-  return `UPDATE ${PasswordRepository.table} SET label = '${label}' AND password = '${password}' WHERE id = ${id}`;
+const updatePassword = ({
+  id,
+  label,
+  password,
+  strength,
+  isPublic,
+}: Password): string => {
+  const visibility = isPublic ? '1' : '0';
+
+  return `UPDATE ${PasswordRepository.table} SET label = '${label}', password = '${password}', strength = '${strength}', isPublic = ${visibility}, modified = datetime('now', 'localtime') WHERE id = ${id}`;
+};
+
+const deletePassword = (id: number): string => {
+  return `DELETE FROM ${PasswordRepository.table} WHERE id = ${id}`;
 };
 
 export const PasswordRepository = {
@@ -85,5 +97,6 @@ export const PasswordRepository = {
   createTableStmt: createTable,
   createPasswordStmt: createPassword,
   updatePasswordStmt: updatePassword,
+  deletePasswordStmt: deletePassword,
   findAllStmt: findAll,
 };

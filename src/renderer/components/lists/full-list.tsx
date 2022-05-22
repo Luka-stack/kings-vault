@@ -1,5 +1,6 @@
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { confirmAlert } from 'react-confirm-alert';
 import {
   faCopy,
   faEdit,
@@ -9,94 +10,92 @@ import {
   faUser,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import DropDown from '../dropdown';
+import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
 
 dayjs.extend(relativeTime);
-
-const passwords = [
-  {
-    id: 1,
-    label: 'PayPal',
-    passwrod: '*****',
-    color: 'green', // strong
-    strength: 'strong', // strong
-    age: '2 days',
-  },
-  {
-    id: 2,
-    label: 'Ipko',
-    passwrod: '*****',
-    color: 'orange', // medium
-    strength: 'medium', // medium
-    age: '1 year',
-  },
-  {
-    id: 3,
-    label: 'Steam',
-    passwrod: '*****',
-    color: 'red', // waek
-    strength: 'weak', // waek
-    age: '2 months',
-  },
-  {
-    id: 4,
-    label: 'GitHub',
-    passwrod: '*****',
-    color: 'green',
-    strength: 'strong',
-    age: '30 days',
-  },
-];
 
 const STRENGTH_OPTIONS = ['All', 'Weak', 'Medium', 'Strong'];
 const AGE_OPTIONS = ['All', '< Week', '< Month', '< Year'];
 const ORDER_OPTIONS = ['Age', 'Label', 'Strength'];
 
-interface FullListProps {
+interface Props {
   isPublic: boolean;
 }
 
-const FullList: React.FC<FullListProps> = ({ isPublic }) => {
+const FullList: React.FC<Props> = ({ isPublic }) => {
   const [queryStrength, setQueryStrength] = useState(STRENGTH_OPTIONS[0]);
   const [queryAge, setQueryAge] = useState(AGE_OPTIONS[0]);
   const [queryOrder, setQueryOrder] = useState(ORDER_OPTIONS[0]);
 
-  useEffect(() => {
-    window.electron.ipcRenderer.sendMessage('passwd:findAll', []);
-  }, []);
+  const { passwds } = useTypedSelector((state) => state.passwds);
 
-  const generatedPasswords = passwords.map((password) => (
+  const copyPassword = (password: string) => {
+    navigator.clipboard.writeText(password);
+  };
+
+  const deletePassword = (label: string, passwdId: number) => {
+    confirmAlert({
+      customUI: ({ onClose }) => {
+        return (
+          <div className="custom-ui">
+            <h1>Are you sure?</h1>
+            <p>You want to delete password for {label}</p>
+            <button onClick={onClose}>No</button>
+            <button
+              onClick={() => {
+                window.electron.ipcRenderer.sendMessage('passwd:passwdDelete', [
+                  passwdId,
+                ]);
+                onClose();
+              }}
+            >
+              Yes, Delete it!
+            </button>
+          </div>
+        );
+      },
+    });
+  };
+
+  const generatedPasswords = passwds.map((passwd) => (
     <>
-      <div className="ksv--pwd-item" key={password.id}>
+      <div className="ksv--pwd-item" key={passwd.id}>
         <div className="flex justify-between">
           <div>
-            <h3 className="flex font-medium text-white">{password.label}</h3>
+            <h3 className="flex font-medium text-white">{passwd.label}</h3>
             <p className="mt-1 font-light cursor-pointer text-ksv-light-gray">
-              {password.passwrod}
+              *****{/* {passwd.passwd} */}
             </p>
           </div>
 
           <div className="flex flex-row">
             <div className="flex-col items-center hidden h-8 p-2 mr-6 text-xs font-medium w-fit text-neutral-400 ksv--display-flex">
               <p>strength</p>
-              <p className={getPasswordStrenghtColor(password.strength)}>
-                {password.strength}
-              </p>
+              <p className={passwd.strength}>{passwd.strength}</p>
             </div>
-            <div className="flex-col items-center hidden h-8 p-2 mr-5 text-xs font-medium w-28 text-neutral-400 ksv--display-flex">
-              <p>age</p>
-              <p>{dayjs(password.age).fromNow()}</p>
+            <div className="flex-col items-center hidden h-8 p-2 mr-5 text-xs font-medium w-fit text-neutral-400 ksv--display-flex">
+              <p>modified</p>
+              <p>{dayjs(passwd.modified).fromNow()}</p>
             </div>
 
-            <i className="flex items-center h-8 p-2 mt-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
+            <i
+              className="flex items-center h-8 p-2 mt-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700"
+              onClick={() => copyPassword(passwd.password)}
+            >
               <FontAwesomeIcon icon={faCopy} color={'white'} />
             </i>
-            <i className="flex items-center h-8 p-2 mt-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
-              <FontAwesomeIcon icon={faEdit} color={'white'} />
-            </i>
-            <i className="flex items-center h-8 p-2 mt-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
+            <Link to="/edit-password" state={{ type: 'passwd', passwd }}>
+              <i className="flex items-center h-8 p-2 mt-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
+                <FontAwesomeIcon icon={faEdit} color={'white'} />
+              </i>
+            </Link>
+            <i
+              className="flex items-center h-8 p-2 mt-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700"
+              onClick={() => deletePassword(passwd.label, passwd.id)}
+            >
               <FontAwesomeIcon icon={faTrash} color={'white'} />
             </i>
           </div>
@@ -169,18 +168,6 @@ const FullList: React.FC<FullListProps> = ({ isPublic }) => {
       </div>
     </div>
   );
-};
-
-const getPasswordStrenghtColor = (strength: string) => {
-  if (strength === 'weak') {
-    return 'text-red-600';
-  }
-
-  if (strength === 'medium') {
-    return 'text-yellow-600';
-  }
-
-  return 'text-green-600';
 };
 
 export default FullList;
