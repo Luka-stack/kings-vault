@@ -4,7 +4,8 @@ import { User, UserRepository } from './user';
 export interface Password {
   id?: number;
   label: string;
-  password: string;
+  content: string;
+  iv: string;
   strength: string;
   isPublic: boolean;
   modified?: string;
@@ -21,7 +22,11 @@ const FIELDS: DbField[] = [
     type: 'TEXT UNIQUE',
   },
   {
-    name: 'password',
+    name: 'content',
+    type: 'TEXT',
+  },
+  {
+    name: 'iv',
     type: 'TEXT',
   },
   {
@@ -53,39 +58,52 @@ const createTable = (): string => {
   return `${base} (${columns.join(', ')})`;
 };
 
-const createPassword = (password: Password, userId: number): string => {
+const createPassword = (
+  { label, content, iv, strength, isPublic }: Password,
+  userId: number
+): string => {
   const fields = FIELDS.slice(1, FIELDS.length - 1).map((field) => field.name);
   const base = `INSERT INTO ${PasswordRepository.table} (${fields})`;
 
   const values: string[] = [];
-  values.push(`'${password.label}'`);
-  values.push(`'${password.password}'`);
-  values.push(`'${password.strength}'`);
+  values.push(`'${label}'`);
+  values.push(`'${content}'`);
+  values.push(`'${iv}'`);
+  values.push(`'${strength}'`);
   values.push("datetime('now', 'localtime')");
-  values.push(password.isPublic ? '1' : '0');
+  values.push(isPublic ? '1' : '0');
   values.push(userId + '');
 
   return `${base} VALUES(${values})`;
 };
 
-const findAll = (): string => {
+const findAll = (userId?: number): string => {
+  let where: string;
+
+  if (userId) {
+    where = `userId = ${userId} OR passwds.isPublic = 1`;
+  } else {
+    where = 'passwds.isPublic = 1';
+  }
+
   const passwdFields =
-    'passwds.id, passwds.label, passwds.password, passwds.strength, passwds.modified, passwds.isPublic';
+    'passwds.id, passwds.label, passwds.content, passwds.iv, passwds.strength, passwds.modified, passwds.isPublic';
   const userFields = 'users.id as userId, users.username';
 
-  return `SELECT ${passwdFields}, ${userFields} FROM ${UserRepository.table} as users INNER JOIN ${PasswordRepository.table} as passwds ON passwds.user_id = users.id`;
+  return `SELECT ${passwdFields}, ${userFields} FROM ${UserRepository.table} as users INNER JOIN ${PasswordRepository.table} as passwds ON passwds.user_id = users.id WHERE ${where}`;
 };
 
 const updatePassword = ({
   id,
   label,
-  password,
+  content,
+  iv,
   strength,
   isPublic,
 }: Password): string => {
   const visibility = isPublic ? '1' : '0';
 
-  return `UPDATE ${PasswordRepository.table} SET label = '${label}', password = '${password}', strength = '${strength}', isPublic = ${visibility}, modified = datetime('now', 'localtime') WHERE id = ${id}`;
+  return `UPDATE ${PasswordRepository.table} SET label = '${label}', content = '${content}', iv = '${iv}, strength = '${strength}', isPublic = ${visibility}, modified = datetime('now', 'localtime') WHERE id = ${id}`;
 };
 
 const deletePassword = (id: number): string => {

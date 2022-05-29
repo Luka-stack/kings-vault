@@ -120,7 +120,7 @@ const createDatabase = async () => {
   });
 
   ipcMain.on('passwd:findAll', (_event, args: any[]) => {
-    database!.findAll();
+    database!.findAll(args[0].user);
   });
 
   ipcMain.on('passwd:passwdUpdate', (_event, args: any[]) => {

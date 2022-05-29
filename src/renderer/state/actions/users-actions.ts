@@ -19,6 +19,10 @@ export interface LogInAction {
   type: ActionType.LOG_IN;
 }
 
+export interface LogOutAction {
+  type: ActionType.LOG_OUT;
+}
+
 export interface UserUpdateAction {
   type: ActionType.USER_UPDATE;
   payload: User;
@@ -34,5 +38,6 @@ export type Action =
   | CreateUserCompleteAction
   | CreateUserErrorAction
   | LogInAction
+  | LogOutAction
   | UserUpdateAction
   | UserErrorAction;

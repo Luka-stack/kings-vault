@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
+import { decrypt } from './cipher';
 
 export type Channels =
   | 'user:create'
@@ -32,4 +33,8 @@ contextBridge.exposeInMainWorld('electron', {
       ipcRenderer.once(channel, (_event, ...args) => func(...args));
     },
   },
+});
+
+contextBridge.exposeInMainWorld('cipher', {
+  decrypt: decrypt,
 });

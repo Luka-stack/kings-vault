@@ -2,12 +2,13 @@ import sqlite, { RunResult } from 'sqlite3';
 import { execSync } from 'child_process';
 import fs from 'fs';
 import { User, UserRepository } from './entities/user';
-import crypto from 'crypto';
 import { BrowserWindow } from 'electron';
 import { PasswordRepository } from './entities/password';
+import { createHash, encrypt } from '../cipher';
 
 export class PersistentService {
   private _db!: sqlite.Database;
+  private _anonymous!: User;
 
   constructor(
     private readonly dbFile: string,
@@ -25,29 +26,56 @@ export class PersistentService {
       return db;
     }
 
-    return new sqlite.Database(dbFile);
+    let db = new sqlite.Database(dbFile);
+    db.get(UserRepository.findByIdStmt(1), (err: Error | null, row: any) => {
+      if (err) {
+        // TODO: Implement error handling
+        console.log("Couldn't find anonymous user", err);
+      }
+
+      this._anonymous = row;
+    });
+
+    return db;
   }
 
   initTables(db: sqlite.Database): void {
     db.parallelize(() => {
-      // create users table
-      db.run(
-        UserRepository.createTableStmt(),
-        (_: RunResult, err: Error | null) => {
-          if (err) {
-            // TODO: Implement error handling
-            console.log("Couldn't create users table", err);
+      db.serialize(() => {
+        db.run(
+          UserRepository.createTableStmt(),
+          (_: RunResult, err: Error | null) => {
+            if (err) {
+              // TODO: Implement error handling
+              console.log("Couldn't create users table", err);
+            }
           }
-        }
-      );
+        );
 
-      // create passwords table
+        this._anonymous = {
+          id: 1,
+          username: '_Anonymous',
+          password: '',
+          strength: '',
+          token: uuid(),
+        };
+        db.run(
+          UserRepository.createUserStmt(this._anonymous),
+          (_result: any, err: Error | null) => {
+            if (err) {
+              // TODO: Implement error handling
+              return console.log("Couldn't create anonymous user", err);
+            }
+          }
+        );
+      });
+
       db.run(
         PasswordRepository.createTableStmt(),
         (_: RunResult, err: Error | null) => {
           if (err) {
             // TODO: Implement error handling
-            console.log("Couldn't create users table", err);
+            console.log("Couldn't create password table", err);
           }
         }
       );
@@ -55,19 +83,14 @@ export class PersistentService {
   }
 
   // users
-
   createUser(username: string, password: string, strength: string): void {
-    const token = uuid();
-    const passwordHash = crypto
-      .createHash('sha256')
-      .update(password)
-      .digest('base64');
+    const passwordHash = createHash(password);
 
     const user: User = {
       username,
       password: passwordHash,
       strength,
-      token: token,
+      token: uuid(),
     };
 
     const stmt = UserRepository.createUserStmt(user);
@@ -89,16 +112,13 @@ export class PersistentService {
   }
 
   logIn(username: string, password: string): void {
-    const passwordHash = crypto
-      .createHash('sha256')
-      .update(password)
-      .digest('base64');
+    const passwordHash = createHash(password);
 
-    const stmt = UserRepository.findOneStmt(username, passwordHash);
+    const stmt = UserRepository.logInStmt(username, passwordHash);
     this._db.all(stmt, (err: Error | null, result: any[]) => {
       if (err) {
         // TODO: Implement error handling
-        return console.log("Couldn't create user", err);
+        return console.log("Couldn't find user", err);
       }
 
       if (result.length) {
@@ -116,21 +136,22 @@ export class PersistentService {
   }
 
   updateUser(username: string, password: string, strength: string): void {
-    const passwordHash = crypto
-      .createHash('sha256')
-      .update(password)
-      .digest('base64');
-    let stmt = UserRepository.updateUserStmt(username, passwordHash, strength);
+    const passwordHash = createHash(password);
 
     this._db.serialize(() => {
+      let stmt = UserRepository.updateUserStmt(
+        username,
+        passwordHash,
+        strength
+      );
       this._db.run(stmt, (_result: any, err: Error | null) => {
         if (err) {
           // TODO: Implement error handling
-          return console.log("Couldn't create user", err);
+          return console.log("Couldn't update user", err);
         }
       });
 
-      stmt = UserRepository.findOneStmt(username, passwordHash);
+      stmt = UserRepository.logInStmt(username, passwordHash);
       this._db.all(stmt, (err: Error | null, result: any[]) => {
         if (err) {
           // TODO: Implement error handling
@@ -149,36 +170,42 @@ export class PersistentService {
 
   // passwords
   createPasswd(
-    password: {
+    passwd: {
       label: string;
       password: string;
       strength: string;
       isPublic: boolean;
     },
-    user: { id: number; token: string }
+    user: { id: number; token: string } | undefined
   ): void {
-    const passwordHash = crypto
-      .createHmac('sha256', user.token)
-      .update(password.password)
-      .digest('base64');
+    const passwordUser = user ? user : this._anonymous;
 
-    password.password = passwordHash;
+    const passwordHash = encrypt(passwd.password);
+    const passwordObject = {
+      label: passwd.label,
+      content: passwordHash.content,
+      iv: passwordHash.iv,
+      strength: passwd.strength,
+      isPublic: passwd.isPublic,
+    };
 
-    let stmt: string;
     this._db.serialize(() => {
-      stmt = PasswordRepository.createPasswordStmt(password, user.id);
-      this._db.run(stmt, (result: any, err: Error | null) => {
+      let stmt = PasswordRepository.createPasswordStmt(
+        passwordObject,
+        passwordUser.id!
+      );
+      this._db.run(stmt, (_result: any, err: Error | null) => {
         if (err) {
           // TODO: Implement error handling
           return console.log("Couldn't create password", err);
         }
       });
 
-      stmt = PasswordRepository.findAllStmt();
+      stmt = PasswordRepository.findAllStmt(user ? user.id : undefined);
       this._db.all(stmt, (err: Error | null, result: any[]) => {
         if (err) {
           // TODO: Implement error handling
-          return console.log("Couldn't create user", err);
+          return console.log("Couldn't find passwords", err);
         }
 
         if (result.length) {
@@ -191,37 +218,40 @@ export class PersistentService {
   }
 
   updatePasswd(
-    password: {
+    passwd: {
       id: number;
       label: string;
       password: string;
       strength: string;
       isPublic: boolean;
     },
-    user: { id: number; token: string }
+    user: { id: number; token: string } | undefined
   ): void {
-    const passwordHash = crypto
-      .createHmac('sha256', user.token)
-      .update(password.password)
-      .digest('base64');
-
-    password.password = passwordHash;
+    const passwordHash = encrypt(passwd.password);
+    const passwordObject = {
+      id: passwd.id,
+      label: passwd.label,
+      content: passwordHash.content,
+      iv: passwordHash.iv,
+      strength: passwd.strength,
+      isPublic: passwd.isPublic,
+    };
 
     let stmt: string;
     this._db.serialize(() => {
-      stmt = PasswordRepository.updatePasswordStmt(password);
-      this._db.run(stmt, (result: any, err: Error | null) => {
+      stmt = PasswordRepository.updatePasswordStmt(passwordObject);
+      this._db.run(stmt, (_result: any, err: Error | null) => {
         if (err) {
           // TODO: Implement error handling
           return console.log("Couldn't update password", err);
         }
       });
 
-      stmt = PasswordRepository.findAllStmt();
+      stmt = PasswordRepository.findAllStmt(user ? user.id : undefined);
       this._db.all(stmt, (err: Error | null, result: any[]) => {
         if (err) {
           // TODO: Implement error handling
-          return console.log("Couldn't update user", err);
+          return console.log("Couldn't find passwords", err);
         }
 
         if (result.length) {
@@ -237,33 +267,23 @@ export class PersistentService {
     let stmt: string;
     this._db.serialize(() => {
       stmt = PasswordRepository.deletePasswordStmt(id);
-      this._db.run(stmt, (result: any, err: Error | null) => {
+      this._db.run(stmt, (_result: any, err: Error | null) => {
         if (err) {
           // TODO: Implement error handling
           return console.log("Couldn't delete password", err);
         }
-      });
 
-      stmt = PasswordRepository.findAllStmt();
-      this._db.all(stmt, (err: Error | null, result: any[]) => {
-        if (err) {
-          // TODO: Implement error handling
-          return console.log("Couldn't delete user", err);
-        }
-
-        return this.mainWindow.webContents.send('passwd:passwdsUpdate', [
-          result,
-        ]);
+        return this.mainWindow.webContents.send('passwd:passwdDelete', id);
       });
     });
   }
 
-  findAll(): void {
-    const stmt = PasswordRepository.findAllStmt();
+  findAll(userId?: number): void {
+    const stmt = PasswordRepository.findAllStmt(userId);
     this._db.all(stmt, (err: Error | null, result: any[]) => {
       if (err) {
         // TODO: Implement error handling
-        return console.log("Couldn't create user", err);
+        return console.log("Couldn't find passwords", err);
       }
 
       return this.mainWindow.webContents.send('passwd:passwdsUpdate', [result]);

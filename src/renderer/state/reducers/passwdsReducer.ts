@@ -17,9 +17,14 @@ const reducer = (
   switch (action.type) {
     case ActionType.PASSWDS_UPDATE:
       return {
-        ...state,
         passwds: action.payload,
       };
+
+    case ActionType.PASSWD_DELETED:
+      return {
+        passwds: state.passwds.filter((passwd) => passwd.id !== action.payload),
+      };
+
     default:
       return state;
   }

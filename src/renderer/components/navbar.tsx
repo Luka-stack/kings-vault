@@ -6,12 +6,15 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useNavigate } from 'react-router-dom';
+import { useActions } from 'renderer/hooks/use-actions';
 import CustomLink from './link';
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const { logOut } = useActions();
 
   const logout = () => {
+    logOut();
     navigate('/');
   };
 

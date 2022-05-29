@@ -7,46 +7,90 @@ import {
   faUser,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useNavigate } from 'react-router-dom';
-
-const passwords = [
-  {
-    label: 'PayPal',
-    passwrod: '*****',
-    color: 'green', // strong
-    strength: 'strong', // strong
-  },
-  {
-    label: 'Ipko',
-    passwrod: '*****',
-    color: 'orange', // medium
-    strength: 'medium', // medium
-  },
-  {
-    label: 'Steam',
-    passwrod: '*****',
-    color: 'red', // waek
-    strength: 'weak', // waek
-  },
-  {
-    label: 'GitHub',
-    passwrod: '*****',
-    color: 'green',
-    strength: 'strong',
-  },
-];
+import { Fragment } from 'react';
+import { confirmAlert } from 'react-confirm-alert';
+import { Link, useNavigate } from 'react-router-dom';
+import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
+import ConfirmationModal from '../confirmation-modal';
 
 const PartialList = () => {
   const navigate = useNavigate();
 
-  const editPassword = () => {};
+  const { passwds } = useTypedSelector((state) => state.passwds);
 
-  const createNewPassword = () => {
-    navigate('/new-password');
+  const copyPassword = (iv: string, content: string): void => {
+    const decrypted = window.cipher.descrypt(iv, content);
+    navigator.clipboard.writeText(decrypted);
+  };
+
+  const deletePassword = (label: string, passwdId: number) => {
+    confirmAlert({
+      customUI: ({ onClose }) => {
+        return (
+          <ConfirmationModal
+            title="Delete Password"
+            text={`You want to delete password for ${label}`}
+            onClick={() => {
+              window.electron.ipcRenderer.sendMessage('passwd:passwdDelete', [
+                passwdId,
+              ]);
+            }}
+            onClose={onClose}
+          />
+        );
+      },
+    });
   };
 
   const openFullList = () => {
     navigate('/public-list');
+  };
+
+  const generatedPasswords = () => {
+    if (!passwds.length) {
+      return (
+        <p className="mx-auto text-sm font-medium text-white">
+          Currently there is no passwords in vault.
+        </p>
+      );
+    }
+
+    return passwds.map((passwd) => (
+      <Fragment key={passwd.label}>
+        <div className="ksv--pwd-item">
+          <div className="flex justify-between">
+            <div>
+              <h3 className="flex font-medium text-white">{passwd.label}</h3>
+              <p className="mt-1 font-light cursor-pointer text-ksv-light-gray">
+                ************
+              </p>
+            </div>
+
+            <div className="flex flex-row">
+              <i
+                className="flex items-center h-8 p-2 mt-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700"
+                onClick={() => copyPassword(passwd.iv, passwd.content)}
+              >
+                <FontAwesomeIcon icon={faCopy} color={'white'} />
+              </i>
+              <Link to="/edit-password" state={{ type: 'passwd', passwd }}>
+                <i className="flex items-center h-8 p-2 mt-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
+                  <FontAwesomeIcon icon={faEdit} color={'white'} />
+                </i>
+              </Link>
+              <i
+                className="flex items-center h-8 p-2 mt-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700"
+                onClick={() => deletePassword(passwd.label, passwd.id)}
+              >
+                <FontAwesomeIcon icon={faTrash} color={'white'} />
+              </i>
+            </div>
+          </div>
+
+          <hr className="mx-auto" />
+        </div>
+      </Fragment>
+    ));
   };
 
   return (
@@ -79,42 +123,7 @@ const PartialList = () => {
           </div>
 
           <div className="flex-row h-56 p-3 mt-4 space-y-2 overflow-y-auto rounded-lg w-[30rem] bg-ksv-black">
-            {passwords.map((password) => (
-              <>
-                <div className="ksv--pwd-item">
-                  <div className="flex justify-between">
-                    <div>
-                      <h3 className="flex font-medium text-white">
-                        {password.label}
-                        <i
-                          className="items-center hidden ml-2 text-xs font-medium ksv--pwd-strength"
-                          style={{ color: password.color }}
-                        >
-                          {password.strength}
-                        </i>
-                      </h3>
-                      <p className="mt-1 font-light cursor-pointer text-ksv-light-gray">
-                        {password.passwrod}
-                      </p>
-                    </div>
-
-                    <div className="flex mt-2">
-                      <i className="flex items-center h-8 p-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
-                        <FontAwesomeIcon icon={faCopy} color="white" />
-                      </i>
-                      <i className="flex items-center h-8 p-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
-                        <FontAwesomeIcon icon={faEdit} color="white" />
-                      </i>
-                      <i className="flex items-center h-8 p-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
-                        <FontAwesomeIcon icon={faTrash} color="white" />
-                      </i>
-                    </div>
-                  </div>
-
-                  <hr className="mx-auto" />
-                </div>
-              </>
-            ))}
+            {generatedPasswords()}
           </div>
         </div>
 
@@ -125,12 +134,11 @@ const PartialList = () => {
           >
             See All
           </button>
-          <button
-            onClick={createNewPassword}
-            className="w-40 p-1 text-sm font-medium text-white rounded-full bg-ksv-blue-500 hover:bg-ksv-blue-700"
-          >
-            Create New
-          </button>
+          <Link to="/new-password" state={{ type: 'passwd' }}>
+            <button className="w-40 p-1 text-sm font-medium text-white rounded-full bg-ksv-blue-500 hover:bg-ksv-blue-700">
+              Create New
+            </button>
+          </Link>
         </div>
       </div>
     </div>

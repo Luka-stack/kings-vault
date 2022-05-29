@@ -17,6 +17,12 @@ const reducer = (
   action: Action
 ): UserState => {
   switch (action.type) {
+    case ActionType.LOG_OUT:
+      return {
+        ...state,
+        user: null,
+      };
+
     case ActionType.CREATE_USER:
       return {
         ...state,

@@ -1,7 +1,8 @@
 export interface Passwd {
   id: number;
   label: string;
-  password: string;
+  content: string;
+  iv: string;
   strength: string;
   isPublic: boolean;
   modified: string;

@@ -63,14 +63,13 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
     passwd?: Passwd;
   };
 
-  console.log(passwd);
-
   const [label, setLabel] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [mismatch, setMismatch] = useState<boolean>(false);
 
   const [length, setLength] = useState('');
+  const [isPublic, setIsPublic] = useState(false);
   const [settings, setSettings] = useState(PASSWORD_SETTINGS);
   const [caseSettings, setCaseSettings] = useState(CASE_SETTINGS);
 
@@ -95,8 +94,14 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
     if (edit) {
       if (passwd) {
         window.electron.ipcRenderer.sendMessage('passwd:passwdUpdate', [
-          { id: passwd.id, label, password, strength: 'weak', isPublic: false },
-          { id: user!.id, token: user!.token },
+          {
+            id: passwd.id,
+            label,
+            password,
+            strength: 'weak',
+            isPublic: isPublic,
+          },
+          user,
         ]);
         return goBack();
       }
@@ -117,10 +122,11 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
         label,
         password,
         strength: 'weak',
-        isPublic: false,
+        isPublic: isPublic,
       },
-      { id: user!.id, token: user!.token },
+      user,
     ]);
+
     return goBack();
   };
 
@@ -175,8 +181,11 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
     }
 
     if (passwd) {
+      const decrypted = window.cipher.descrypt(passwd.iv, passwd.content);
+
       setLabel(passwd.label);
-      setPassword(passwd.password);
+      setPassword(decrypted);
+      setIsPublic(passwd.isPublic);
     }
   }, []);
 
@@ -190,7 +199,7 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
         onChange={() => {}}
         checked={setting.checked}
         type="checkbox"
-        className="mr-2 bg-transparent rounded cursor-pointer text-ksv-gray-500 hover:bg-ksv-gray-700 border-ksv-black checked:ring-0 focus:ring-0 focus:ring-offset-0 checked:bg-ksv-gray-500"
+        className="mr-2 bg-transparent border-gray-400 rounded cursor-pointer text-ksv-gray-500 hover:bg-ksv-gray-700 checked:ring-0 focus:ring-0 focus:ring-offset-0 checked:bg-ksv-gray-500"
       />
       {setting.label}
     </p>
@@ -206,7 +215,7 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
         onChange={() => {}}
         checked={setting.checked}
         type="checkbox"
-        className="mr-2 bg-transparent rounded cursor-pointer text-ksv-gray-500 hover:bg-ksv-gray-700 border-ksv-black checked:ring-0 focus:ring-0 focus:ring-offset-0 checked:bg-ksv-gray-500"
+        className="mr-2 bg-transparent border-gray-400 rounded cursor-pointer text-ksv-gray-500 hover:bg-ksv-gray-700 checked:ring-0 focus:ring-0 focus:ring-offset-0 checked:bg-ksv-gray-500"
       />
       {setting.label}
     </p>
@@ -281,7 +290,22 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
               Password Strength: Medium
             </p>
 
-            <div className="mt-6">
+            {type !== 'user' && (
+              <p
+                className="flex items-center mt-5 text-sm font-normal text-white cursor-pointer"
+                onClick={() => setIsPublic(!isPublic)}
+              >
+                <input
+                  onChange={() => {}}
+                  checked={isPublic}
+                  type="checkbox"
+                  className="mr-2 bg-transparent border-gray-400 rounded cursor-pointer text-ksv-gray-500 hover:bg-ksv-gray-700 checked:ring-0 focus:ring-0 focus:ring-offset-0 checked:bg-ksv-gray-500"
+                />
+                public password
+              </p>
+            )}
+
+            <div className="mt-5">
               <button
                 className="h-8 p-1 text-sm font-medium text-white rounded-full w-72 bg-ksv-blue-500 hover:bg-ksv-blue-700"
                 disabled={disabled}

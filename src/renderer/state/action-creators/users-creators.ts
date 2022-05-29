@@ -1,6 +1,6 @@
 import { Dispatch } from 'react';
 import { ActionType } from '../action-types';
-import { Action } from '../actions/users-actions';
+import { Action, LogOutAction } from '../actions/users-actions';
 import { User } from '../user';
 
 export const createUser = (
@@ -28,6 +28,12 @@ export const logIn = (username: string, password: string) => {
     });
 
     window.electron.ipcRenderer.sendMessage('user:logIn', [username, password]);
+  };
+};
+
+export const logOut = (): LogOutAction => {
+  return {
+    type: ActionType.LOG_OUT,
   };
 };
 

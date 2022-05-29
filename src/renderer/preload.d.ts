@@ -12,6 +12,9 @@ declare global {
         once(channel: string, func: (...args: unknown[]) => void): void;
       };
     };
+    cipher: {
+      descrypt(iv: string, content: string): string;
+    };
   }
 }
 

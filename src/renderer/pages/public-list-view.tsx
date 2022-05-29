@@ -17,7 +17,7 @@ const PublicListView = () => {
         <FontAwesomeIcon icon={faArrowLeft} /> Back
       </i>
 
-      <FullList />
+      <FullList isPublic={true} />
     </div>
   );
 };

@@ -6,4 +6,9 @@ export interface PasswdsUpdateAction {
   payload: Passwd[];
 }
 
-export type Action = PasswdsUpdateAction;
+export interface PasswdDeletedAction {
+  type: ActionType.PASSWD_DELETED;
+  payload: number;
+}
+
+export type Action = PasswdsUpdateAction | PasswdDeletedAction;

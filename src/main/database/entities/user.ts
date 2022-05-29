@@ -57,7 +57,11 @@ const createUser = (user: User): string => {
   return `${base} VALUES(${values})`;
 };
 
-const findOne = (username: string, password: string): string => {
+const findById = (id: number): string => {
+  return `SELECT * FROM ${UserRepository.table} WHERE id = ${id}`;
+};
+
+const logIn = (username: string, password: string): string => {
   return `SELECT * FROM ${UserRepository.table} WHERE username = '${username}' AND password = '${password}'`;
 };
 
@@ -74,5 +78,6 @@ export const UserRepository = {
   createTableStmt: createTable,
   createUserStmt: createUser,
   updateUserStmt: updateUser,
-  findOneStmt: findOne,
+  findByIdStmt: findById,
+  logInStmt: logIn,
 };
