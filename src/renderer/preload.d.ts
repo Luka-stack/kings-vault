@@ -13,7 +13,7 @@ declare global {
       };
     };
     cipher: {
-      descrypt(iv: string, content: string): string;
+      decrypt(iv: string, content: string): string;
     };
   }
 }

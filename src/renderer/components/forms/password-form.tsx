@@ -8,7 +8,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
-import { Passwd } from 'renderer/state/passwd';
+import {
+  DEFAULT_LENGTH,
+  greaterThan,
+  MIN_LENGTH,
+  setLength,
+} from 'renderer/password-generator';
+import { generatePassword } from 'renderer/password-generator/generator';
+import { Passwd } from '../../state/passwd';
 
 const PASSWORD_SETTINGS = [
   {
@@ -46,10 +53,6 @@ const CASE_SETTINGS = [
   },
 ];
 
-const MIN_LENGTH = 1;
-const DEFAULT_LENGTH = 12;
-const MAX_LENGTH = 20;
-
 interface Props {
   edit: boolean;
 }
@@ -63,12 +66,13 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
     passwd?: Passwd;
   };
 
-  const [label, setLabel] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [confirmPassword, setConfirmPassword] = useState<string>('');
-  const [mismatch, setMismatch] = useState<boolean>(false);
+  const [label, setLabel] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [formError, setFormError] = useState('');
+  const [generateError, setGenerateError] = useState('');
 
-  const [length, setLength] = useState('');
+  const [generateLength, setGenerateLength] = useState('');
   const [isPublic, setIsPublic] = useState(false);
   const [settings, setSettings] = useState(PASSWORD_SETTINGS);
   const [caseSettings, setCaseSettings] = useState(CASE_SETTINGS);
@@ -79,16 +83,19 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
     navigate(-1);
   };
 
-  const disabled =
-    label.trim().length === 0 ||
-    password.trim().length === 0 ||
-    confirmPassword.trim().length === 0;
-
   const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
+    if (
+      label.trim().length === 0 ||
+      password.trim().length === 0 ||
+      confirmPassword.trim().length === 0
+    ) {
+      return setFormError('All fields must be filled');
+    }
+
     if (password !== confirmPassword) {
-      return setMismatch(true);
+      return setFormError('Password are not the same');
     }
 
     if (edit) {
@@ -131,17 +138,14 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
   };
 
   const updateLength = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.value === '') {
-      setLength('');
-      return;
-    }
+    let length = event.target.value.slice(0, 4);
 
-    if (Number(event.target.value)) {
-      const newLength = +event.target.value;
-      if (MIN_LENGTH <= newLength && newLength <= MAX_LENGTH) {
-        setLength(newLength + '');
-      }
-    }
+    const isStrongLength = greaterThan(length);
+    const newSettings = settings.slice();
+    newSettings[0].checked = isStrongLength;
+    setSettings(newSettings);
+
+    setGenerateLength(length.trim());
   };
 
   const settingChanged = (id: number) => {
@@ -159,7 +163,15 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
       });
 
       setCaseSettings(newCaseSettings);
-      setLength(DEFAULT_LENGTH + '');
+      setGenerateLength(`> ${DEFAULT_LENGTH}`);
+    } else if (id === 1) {
+      newSettings = settings.slice();
+      newSettings[id].checked = !settings[id].checked;
+
+      let newCaseSettings = caseSettings.slice();
+      caseSettings[0].checked = newSettings[id].checked;
+      caseSettings[1].checked = newSettings[id].checked;
+      setCaseSettings(newCaseSettings);
     } else {
       newSettings = settings.slice();
       newSettings[id].checked = !settings[id].checked;
@@ -169,9 +181,41 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
   };
 
   const caseSettingChanged = (id: number) => {
-    const newSettings = caseSettings.slice();
-    newSettings[id].checked = !caseSettings[id].checked;
-    setCaseSettings(newSettings);
+    const newCaseSettings = caseSettings.slice();
+    newCaseSettings[id].checked = !caseSettings[id].checked;
+    setCaseSettings(newCaseSettings);
+
+    if (!newCaseSettings[0].checked && !newCaseSettings[1].checked) {
+      const newSettings = settings.slice();
+      newSettings[1].checked = false;
+      setSettings(newSettings);
+    }
+  };
+
+  const generate = () => {
+    if (settings.some((setting) => setting.checked)) {
+      let length;
+      try {
+        length = setLength(generateLength);
+      } catch (err) {
+        setGenerateError(err as string);
+        return;
+      }
+
+      const preparedSettings = {
+        lowerSet: caseSettings[0].checked,
+        upperSet: caseSettings[1].checked,
+        numbersSet: settings[3].checked,
+        symbolsSet: settings[2].checked,
+      };
+
+      const password = generatePassword(preparedSettings, length);
+      setPassword(password);
+      console.log(password);
+      return;
+    }
+
+    setGenerateError('At least one setting must be selected');
   };
 
   useEffect(() => {
@@ -181,7 +225,7 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
     }
 
     if (passwd) {
-      const decrypted = window.cipher.descrypt(passwd.iv, passwd.content);
+      const decrypted = window.cipher.decrypt(passwd.iv, passwd.content);
 
       setLabel(passwd.label);
       setPassword(decrypted);
@@ -277,9 +321,9 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
               </i>
             </div>
 
-            {mismatch && (
+            {formError && (
               <p className="mt-3 text-sm font-medium text-red-500">
-                Password are not the same
+                {formError}
               </p>
             )}
 
@@ -306,10 +350,7 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
             )}
 
             <div className="mt-5">
-              <button
-                className="h-8 p-1 text-sm font-medium text-white rounded-full w-72 bg-ksv-blue-500 hover:bg-ksv-blue-700"
-                disabled={disabled}
-              >
+              <button className="h-8 p-1 text-sm font-medium text-white rounded-full w-72 bg-ksv-blue-500 hover:bg-ksv-blue-700">
                 Save Password
               </button>
             </div>
@@ -333,15 +374,23 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
               <input
                 className="w-24 h-5 py-2 ml-2 text-sm border-none rounded-md text-ksv-light-gray bg-ksv-black bg-none focus:outline-none focus:ring-1 focus:ring-black placeholder:text-ksv-light-gray placeholder:text-sm"
                 type="text"
-                value={length}
+                value={generateLength}
                 onChange={(e) => updateLength(e)}
-                placeholder={`${MIN_LENGTH} - ${MAX_LENGTH}`}
+                placeholder={`> ${MIN_LENGTH}`}
               />
             </p>
-            <button className="w-40 py-1 text-sm text-white rounded-full bg-ksv-gray-500 hover:bg-ksv-gray-300">
+            <button
+              className="w-40 py-1 text-sm text-white rounded-full bg-ksv-gray-500 hover:bg-ksv-gray-300"
+              onClick={generate}
+            >
               Generate
             </button>
           </div>
+          {generateError && (
+            <p className="mt-3 text-sm font-medium text-red-500">
+              {generateError}
+            </p>
+          )}
         </section>
       </main>
     </div>
