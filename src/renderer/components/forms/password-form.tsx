@@ -10,14 +10,21 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
 import {
   DEFAULT_LENGTH,
-  greaterThan,
+  greaterThanDefault,
   MIN_LENGTH,
+  rankPassword,
   setLength,
 } from 'renderer/password-generator';
 import { generatePassword } from 'renderer/password-generator/generator';
 import { Passwd } from '../../state/passwd';
 
-const PASSWORD_SETTINGS = [
+interface PasswordSetting {
+  id: number;
+  label: string;
+  checked: boolean;
+}
+
+const PASSWORD_SETTINGS: PasswordSetting[] = [
   {
     id: 0,
     label: 'strong password',
@@ -40,7 +47,7 @@ const PASSWORD_SETTINGS = [
   },
 ];
 
-const CASE_SETTINGS = [
+const CASE_SETTINGS: PasswordSetting[] = [
   {
     id: 0,
     label: 'lowercase',
@@ -69,6 +76,7 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
   const [label, setLabel] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [passwordStrength, setPasswordStrength] = useState('very-weak');
   const [formError, setFormError] = useState('');
   const [generateError, setGenerateError] = useState('');
 
@@ -105,7 +113,7 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
             id: passwd.id,
             label,
             password,
-            strength: 'weak',
+            strength: passwordStrength,
             isPublic: isPublic,
           },
           user,
@@ -117,7 +125,7 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
         window.electron.ipcRenderer.sendMessage('user:userUpdate', [
           user.username,
           password,
-          'weak',
+          passwordStrength,
         ]);
       }
 
@@ -128,7 +136,7 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
       {
         label,
         password,
-        strength: 'weak',
+        strength: passwordStrength,
         isPublic: isPublic,
       },
       user,
@@ -140,12 +148,32 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
   const updateLength = (event: React.ChangeEvent<HTMLInputElement>) => {
     let length = event.target.value.slice(0, 4);
 
-    const isStrongLength = greaterThan(length);
-    const newSettings = settings.slice();
-    newSettings[0].checked = isStrongLength;
-    setSettings(newSettings);
-
     setGenerateLength(length.trim());
+    checkPasswordSettings(settings, caseSettings, length);
+  };
+
+  const updatePassword = (input: string) => {
+    setPassword(input);
+
+    const passwordRank = rankPassword(input);
+    setPasswordStrength(passwordRank);
+  };
+
+  const checkPasswordSettings = (
+    mainSettings: PasswordSetting[],
+    caseSettings: PasswordSetting[],
+    length: string
+  ) => {
+    const settingNotChecked = [...caseSettings, ...mainSettings.slice(1)].some(
+      (setting) => setting.checked === false
+    );
+    const isStrongLength = greaterThanDefault(length);
+
+    const newSettings = settings.slice();
+    newSettings[0].checked =
+      settingNotChecked || !isStrongLength ? false : true;
+
+    return setSettings(newSettings);
   };
 
   const settingChanged = (id: number) => {
@@ -169,12 +197,14 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
       newSettings[id].checked = !settings[id].checked;
 
       let newCaseSettings = caseSettings.slice();
-      caseSettings[0].checked = newSettings[id].checked;
-      caseSettings[1].checked = newSettings[id].checked;
+      newCaseSettings[0].checked = newSettings[id].checked;
+      newCaseSettings[1].checked = newSettings[id].checked;
       setCaseSettings(newCaseSettings);
+      checkPasswordSettings(newSettings, newCaseSettings, generateLength);
     } else {
       newSettings = settings.slice();
       newSettings[id].checked = !settings[id].checked;
+      checkPasswordSettings(newSettings, caseSettings, generateLength);
     }
 
     setSettings(newSettings);
@@ -185,11 +215,13 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
     newCaseSettings[id].checked = !caseSettings[id].checked;
     setCaseSettings(newCaseSettings);
 
+    const newSettings = settings.slice();
     if (!newCaseSettings[0].checked && !newCaseSettings[1].checked) {
-      const newSettings = settings.slice();
       newSettings[1].checked = false;
       setSettings(newSettings);
     }
+
+    checkPasswordSettings(newSettings, newCaseSettings, generateLength);
   };
 
   const generate = () => {
@@ -210,8 +242,8 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
       };
 
       const password = generatePassword(preparedSettings, length);
-      setPassword(password);
-      console.log(password);
+      updatePassword(password);
+      setGenerateError('');
       return;
     }
 
@@ -228,7 +260,7 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
       const decrypted = window.cipher.decrypt(passwd.iv, passwd.content);
 
       setLabel(passwd.label);
-      setPassword(decrypted);
+      updatePassword(decrypted);
       setIsPublic(passwd.isPublic);
     }
   }, []);
@@ -301,7 +333,7 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
                 className="h-8 py-1 pl-2 pr-8 text-sm font-medium border-none rounded-lg w-72 text-ksv-light-gray bg-ksv-black bg-none focus:outline-none focus:ring-1 focus:ring-black placeholder:text-ksv-light-gray placeholder:text-sm"
                 type={'password'}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => updatePassword(e.target.value)}
                 placeholder="Password"
               />
               <i className="absolute right-0 flex items-center h-8 px-2 rounded-tr-lg rounded-br-lg cursor-pointer bg-ksv-black hover:bg-ksv-gray-700">
@@ -327,11 +359,11 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
               </p>
             )}
 
-            <div className="h-1 mt-6 bg-white rounded-full h">
-              <div className="w-3/5 h-full bg-yellow-600 rounded-full" />
+            <div className="h-1 mt-4 bg-white rounded-full">
+              <div className={`h-full bar-${passwordStrength} rounded-full`} />
             </div>
-            <p className="text-xs font-normal text-yellow-600">
-              Password Strength: Medium
+            <p className={`text-sm font-normal text-${passwordStrength}`}>
+              Password Strength: {passwordStrength.replace('-', ' ')}
             </p>
 
             {type !== 'user' && (

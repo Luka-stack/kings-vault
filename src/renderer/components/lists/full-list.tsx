@@ -50,7 +50,7 @@ const FullList: React.FC<Props> = ({ isPublic }) => {
   });
 
   const copyPassword = (iv: string, content: string): void => {
-    const decrypted = window.cipher.descrypt(iv, content);
+    const decrypted = window.cipher.decrypt(iv, content);
     navigator.clipboard.writeText(decrypted);
   };
 

@@ -2,7 +2,7 @@ export const MIN_LENGTH = 4;
 export const DEFAULT_LENGTH = 14;
 export const MAX_LENGTH = 50;
 
-export const greaterThan = (input: string): boolean => {
+export const greaterThanDefault = (input: string): boolean => {
   const lengthString = input.replaceAll(' ', '');
 
   length = Number(lengthString);
