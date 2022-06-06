@@ -1,22 +1,28 @@
 import {
   faCopy,
-  faEdit,
   faMagnifyingGlass,
+  faPen,
   faTag,
   faTrash,
   faUser,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Fragment } from 'react';
+import { Fragment, useState } from 'react';
 import { confirmAlert } from 'react-confirm-alert';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
+import { Passwd } from 'renderer/state';
 import ConfirmationModal from '../confirmation-modal';
+import PasswordTag from './PasswordTag';
 
 const PartialList = () => {
   const navigate = useNavigate();
 
   const { passwds } = useTypedSelector((state) => state.passwds);
+
+  const [userQuery, setUserQuery] = useState(true);
+  const [labelQuery, setLabelQuery] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const copyPassword = (iv: string, content: string): void => {
     const decrypted = window.cipher.decrypt(iv, content);
@@ -46,40 +52,79 @@ const PartialList = () => {
     navigate('/public-list');
   };
 
+  const onUserQueryClick = (status: boolean) => {
+    setUserQuery(status);
+
+    if (!status) {
+      setLabelQuery(true);
+    }
+  };
+
+  const onLabelQueryClick = (status: boolean) => {
+    if (!userQuery && !status) {
+      return setLabelQuery(true);
+    }
+
+    setLabelQuery(status);
+  };
+
+  const search = () => {};
+
+  const prepareQuery = (): Passwd[] => {
+    if (userQuery && labelQuery) {
+      return passwds.filter((passwd) => {
+        return (
+          passwd.label.includes(searchQuery) ||
+          passwd.username.includes(searchQuery)
+        );
+      });
+    }
+
+    if (userQuery) {
+      return passwds.filter((passwd) => {
+        return passwd.username.includes(searchQuery);
+      });
+    }
+
+    return passwds.filter((passwd) => {
+      return passwd.label.includes(searchQuery);
+    });
+  };
+
   const generatedPasswords = () => {
-    if (!passwds.length) {
+    const queryPassds = prepareQuery();
+
+    if (!queryPassds.length) {
       return (
         <p className="mx-auto text-sm font-medium text-white">
-          Currently there is no passwords in vault.
+          Found zero passwods in valut.
         </p>
       );
     }
 
-    return passwds.map((passwd) => (
+    return queryPassds.map((passwd) => (
       <Fragment key={passwd.label}>
         <div className="ksv--pwd-item">
           <div className="flex justify-between">
             <div>
               <h3 className="flex font-medium text-white">{passwd.label}</h3>
-              <p className="mt-1 font-light cursor-pointer text-ksv-light-gray">
-                ************
-              </p>
+              <PasswordTag content={passwd.content} iv={passwd.iv} />
             </div>
 
             <div className="flex flex-row">
               <i
-                className="flex items-center h-8 p-2 mt-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700"
+                className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2"
                 onClick={() => copyPassword(passwd.iv, passwd.content)}
               >
                 <FontAwesomeIcon icon={faCopy} color={'white'} />
               </i>
               <Link to="/edit-password" state={{ type: 'passwd', passwd }}>
-                <i className="flex items-center h-8 p-2 mt-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
-                  <FontAwesomeIcon icon={faEdit} color={'white'} />
+                <i className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2">
+                  <FontAwesomeIcon icon={faPen} color={'white'} />
                 </i>
               </Link>
               <i
-                className="flex items-center h-8 p-2 mt-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700"
+                className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2"
                 onClick={() => deletePassword(passwd.label, passwd.id)}
               >
                 <FontAwesomeIcon icon={faTrash} color={'white'} />
@@ -107,17 +152,32 @@ const PartialList = () => {
                 className="h-8 py-1 pl-2 pr-8 text-sm font-medium border-none rounded-lg w-96 text-ksv-light-gray bg-ksv-black bg-none focus:outline-none focus:ring-1 focus:ring-black placeholder:text-ksv-light-gray placeholder:text-sm"
                 type="text"
                 placeholder="Search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
 
-              <i className="absolute right-0 flex items-center h-8 px-2 rounded-tr-lg rounded-br-lg cursor-pointer bg-ksv-black hover:bg-ksv-gray-700">
+              <i
+                className="absolute right-0 flex items-center h-8 px-2 border-transparent rounded-tr-lg rounded-br-lg cursor-pointer bg-ksv-black hover:bg-ksv-gray-700 active:border-b-2"
+                onClick={search}
+              >
                 <FontAwesomeIcon icon={faMagnifyingGlass} color="white" />
               </i>
             </div>
 
-            <i className="flex items-center h-8 p-2 ml-6 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
+            <i
+              className={`flex items-center h-8 p-2 ml-6 border-transparent rounded-lg cursor-pointer active:border-b-2 ${
+                userQuery && 'bg-ksv-black'
+              }`}
+              onClick={() => onUserQueryClick(!userQuery)}
+            >
               <FontAwesomeIcon icon={faUser} color="white" />
             </i>
-            <i className="flex items-center h-8 p-2 ml-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
+            <i
+              className={`flex items-center h-8 p-2 ml-2 border-transparent rounded-lg cursor-pointer active:border-b-2 ${
+                labelQuery && 'bg-ksv-black'
+              }`}
+              onClick={() => onLabelQueryClick(!labelQuery)}
+            >
               <FontAwesomeIcon icon={faTag} color="white" />
             </i>
           </div>

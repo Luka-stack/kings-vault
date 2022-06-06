@@ -11,4 +11,8 @@ export enum ActionType {
   // passwords
   PASSWDS_UPDATE = 'passwds_update',
   PASSWD_DELETED = 'passwd_deleted',
+
+  // toasts
+  APPEND_TOAST = 'append_toast',
+  REMOVE_TOAST = 'remove_toast',
 }

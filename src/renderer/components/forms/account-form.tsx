@@ -1,4 +1,4 @@
-import { faKey, faUser } from '@fortawesome/free-solid-svg-icons';
+import { faEye, faEyeSlash, faUser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -8,6 +8,7 @@ import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
 const AccountForm = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [hidePassword, setHidePassword] = useState(true);
 
   const { user, error } = useTypedSelector((state) => state.users);
 
@@ -59,13 +60,19 @@ const AccountForm = () => {
           <div className="relative flex mt-6">
             <input
               className="h-8 py-1 pl-2 pr-8 text-sm font-medium border-none rounded-lg w-72 text-ksv-light-gray bg-ksv-black bg-none focus:outline-none focus:ring-1 focus:ring-black placeholder:text-ksv-light-gray placeholder:text-sm"
-              type={'password'}
+              type={hidePassword ? 'password' : 'text'}
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
-            <i className="absolute right-0 flex items-center h-8 px-2 rounded-tr-lg rounded-br-lg cursor-pointer bg-ksv-black hover:bg-ksv-gray-700">
-              <FontAwesomeIcon icon={faKey} color={'white'} />
+            <i
+              className="absolute right-0 flex items-center h-8 px-2 rounded-tr-lg rounded-br-lg cursor-pointer bg-ksv-black hover:bg-ksv-gray-700 w-9"
+              onClick={() => setHidePassword(!hidePassword)}
+            >
+              <FontAwesomeIcon
+                icon={hidePassword ? faEyeSlash : faEye}
+                color={'white'}
+              />
             </i>
           </div>
 

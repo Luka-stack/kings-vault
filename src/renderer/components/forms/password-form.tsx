@@ -1,6 +1,7 @@
 import {
   faArrowLeft,
-  faKey,
+  faEye,
+  faEyeSlash,
   faTag,
   faUser,
 } from '@fortawesome/free-solid-svg-icons';
@@ -76,14 +77,16 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
   const [label, setLabel] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [passwordStrength, setPasswordStrength] = useState('very-weak');
+  const [hidePassword, setHidePassword] = useState(true);
+  const [isPublic, setIsPublic] = useState(false);
+
   const [formError, setFormError] = useState('');
   const [generateError, setGenerateError] = useState('');
+  const [passwordStrength, setPasswordStrength] = useState('very-weak');
 
-  const [generateLength, setGenerateLength] = useState('');
-  const [isPublic, setIsPublic] = useState(false);
   const [settings, setSettings] = useState(PASSWORD_SETTINGS);
   const [caseSettings, setCaseSettings] = useState(CASE_SETTINGS);
+  const [generateLength, setGenerateLength] = useState('');
 
   const navigate = useNavigate();
 
@@ -191,7 +194,7 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
       });
 
       setCaseSettings(newCaseSettings);
-      setGenerateLength(`> ${DEFAULT_LENGTH}`);
+      setGenerateLength(`= ${DEFAULT_LENGTH}`);
     } else if (id === 1) {
       newSettings = settings.slice();
       newSettings[id].checked = !settings[id].checked;
@@ -297,6 +300,18 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
     </p>
   ));
 
+  const generatePasswordIcon = (
+    <i
+      className="absolute right-0 flex items-center h-8 px-2 rounded-tr-lg rounded-br-lg cursor-pointer w-9 bg-ksv-black hover:bg-ksv-gray-700"
+      onClick={() => setHidePassword(!hidePassword)}
+    >
+      <FontAwesomeIcon
+        icon={hidePassword ? faEyeSlash : faEye}
+        color={'white'}
+      />
+    </i>
+  );
+
   return (
     <div className="w-screen p-4">
       <i
@@ -331,26 +346,22 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
             <div className="relative flex mt-6">
               <input
                 className="h-8 py-1 pl-2 pr-8 text-sm font-medium border-none rounded-lg w-72 text-ksv-light-gray bg-ksv-black bg-none focus:outline-none focus:ring-1 focus:ring-black placeholder:text-ksv-light-gray placeholder:text-sm"
-                type={'password'}
+                type={hidePassword ? 'password' : 'text'}
                 value={password}
                 onChange={(e) => updatePassword(e.target.value)}
                 placeholder="Password"
               />
-              <i className="absolute right-0 flex items-center h-8 px-2 rounded-tr-lg rounded-br-lg cursor-pointer bg-ksv-black hover:bg-ksv-gray-700">
-                <FontAwesomeIcon icon={faKey} color={'white'} />
-              </i>
+              {generatePasswordIcon}
             </div>
             <div className="relative flex mt-6">
               <input
                 className="h-8 py-1 pl-2 pr-8 text-sm font-medium border-none rounded-lg w-72 text-ksv-light-gray bg-ksv-black bg-none focus:outline-none focus:ring-1 focus:ring-black placeholder:text-ksv-light-gray placeholder:text-sm"
-                type={'password'}
+                type={hidePassword ? 'password' : 'text'}
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Confirm Password"
               />
-              <i className="absolute right-0 flex items-center h-8 px-2 rounded-tr-lg rounded-br-lg cursor-pointer bg-ksv-black hover:bg-ksv-gray-700">
-                <FontAwesomeIcon icon={faKey} color={'white'} />
-              </i>
+              {generatePasswordIcon}
             </div>
 
             {formError && (
@@ -408,7 +419,7 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
                 type="text"
                 value={generateLength}
                 onChange={(e) => updateLength(e)}
-                placeholder={`> ${MIN_LENGTH}`}
+                placeholder={`= ${MIN_LENGTH}`}
               />
             </p>
             <button
