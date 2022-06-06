@@ -1,26 +1,24 @@
 import { useEffect, useState } from 'react';
-import { uuid } from 'renderer/utils';
+import { Toast } from 'renderer/state/toast';
 
-export const useToastPortal = () => {
-  const [loaded, setLoaded] = useState(false);
-  const [portalId] = useState(`toast-portal-${uuid()}`);
+export const useToastAutoClose = (
+  toasts: Toast[],
+  removeToast: (id: string) => void,
+  autoClose: boolean,
+  autoCloseTime: number
+) => {
+  const [removing, setRemoving] = useState('');
 
   useEffect(() => {
-    const div = document.createElement('div');
-    div.id = portalId;
-    div.setAttribute(
-      'style',
-      'position: fixed; top: 10px; right: 10px; z-index: 9999'
-    );
+    if (removing) {
+      removeToast(removing);
+    }
+  }, [removing, removeToast]);
 
-    document.getElementsByTagName('body')[0].prepend(div);
-
-    setLoaded(true);
-
-    return () => {
-      document.getElementsByTagName('body')[0].removeChild(div);
-    };
-  }, [portalId]);
-
-  return { loaded, portalId };
+  useEffect(() => {
+    if (autoClose && toasts.length) {
+      const id = toasts[toasts.length - 1].id;
+      setTimeout(() => setRemoving(id), autoCloseTime);
+    }
+  }, [toasts, autoClose, autoCloseTime]);
 };
