@@ -6,18 +6,17 @@ import {
   faUser,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
-import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   DEFAULT_LENGTH,
   greaterThanDefault,
   MIN_LENGTH,
+  PasswordStrength,
   rankPassword,
   setLength,
-} from 'renderer/password-generator';
-import { generatePassword } from 'renderer/password-generator/generator';
-import { Passwd } from '../../state/passwd';
+} from 'renderer/passwds-utilities';
+import { generatePassword } from 'renderer/passwds-utilities/generator';
 
 interface PasswordSetting {
   id: number;
@@ -62,27 +61,39 @@ const CASE_SETTINGS: PasswordSetting[] = [
 ];
 
 interface Props {
-  edit: boolean;
+  title: string;
+  type: 'user' | 'password';
+  name?: string;
+  password?: string;
+  isPublic?: boolean;
+  isPublicAvailable?: boolean;
+  onSubmit: (
+    password: string,
+    passwordStrength: PasswordStrength,
+    name?: string,
+    isPublic?: boolean
+  ) => void;
 }
 
-const PasswordForm: React.FC<Props> = ({ edit }) => {
-  const { user } = useTypedSelector((state) => state.users);
-
-  const location = useLocation();
-  const { type, passwd } = location.state as {
-    type: string;
-    passwd?: Passwd;
-  };
-
-  const [label, setLabel] = useState('');
-  const [password, setPassword] = useState('');
+const PasswordForm: React.FC<Props> = ({
+  title,
+  type,
+  name = '',
+  password = '',
+  isPublic = false,
+  isPublicAvailable = false,
+  onSubmit,
+}) => {
+  const [nameInput, setNateInput] = useState(name);
+  const [passwordInput, setPasswordInput] = useState(password);
   const [confirmPassword, setConfirmPassword] = useState('');
   const [hidePassword, setHidePassword] = useState(true);
-  const [isPublic, setIsPublic] = useState(false);
+  const [publicPassword, setPublicPassword] = useState(isPublic);
 
   const [formError, setFormError] = useState('');
   const [generateError, setGenerateError] = useState('');
-  const [passwordStrength, setPasswordStrength] = useState('very-weak');
+  const [passwordStrength, setPasswordStrength] =
+    useState<PasswordStrength>('very-weak');
 
   const [settings, setSettings] = useState(PASSWORD_SETTINGS);
   const [caseSettings, setCaseSettings] = useState(CASE_SETTINGS);
@@ -90,62 +101,23 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
 
   const navigate = useNavigate();
 
-  const goBack = () => {
-    navigate(-1);
-  };
-
-  const onSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const onSubmitForm = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
     if (
-      label.trim().length === 0 ||
-      password.trim().length === 0 ||
+      nameInput.trim().length === 0 ||
+      passwordInput.trim().length === 0 ||
       confirmPassword.trim().length === 0
     ) {
       return setFormError('All fields must be filled');
     }
 
-    if (password !== confirmPassword) {
+    if (passwordInput !== confirmPassword) {
       return setFormError('Password are not the same');
     }
 
-    if (edit) {
-      if (passwd) {
-        window.electron.ipcRenderer.sendMessage('passwd:passwdUpdate', [
-          {
-            id: passwd.id,
-            label,
-            password,
-            strength: passwordStrength,
-            isPublic: isPublic,
-          },
-          user,
-        ]);
-        return goBack();
-      }
-
-      if (user) {
-        window.electron.ipcRenderer.sendMessage('user:userUpdate', [
-          user.username,
-          password,
-          passwordStrength,
-        ]);
-      }
-
-      return goBack();
-    }
-
-    window.electron.ipcRenderer.sendMessage('passwd:create', [
-      {
-        label,
-        password,
-        strength: passwordStrength,
-        isPublic: isPublic,
-      },
-      user,
-    ]);
-
-    return goBack();
+    onSubmit(passwordInput, passwordStrength, nameInput, publicPassword);
+    navigate(-1);
   };
 
   const updateLength = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -156,7 +128,7 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
   };
 
   const updatePassword = (input: string) => {
-    setPassword(input);
+    setPasswordInput(input);
 
     const passwordRank = rankPassword(input);
     setPasswordStrength(passwordRank);
@@ -253,21 +225,6 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
     setGenerateError('At least one setting must be selected');
   };
 
-  useEffect(() => {
-    if (type === 'user') {
-      setLabel(user!.username);
-      return;
-    }
-
-    if (passwd) {
-      const decrypted = window.cipher.decrypt(passwd.iv, passwd.content);
-
-      setLabel(passwd.label);
-      updatePassword(decrypted);
-      setIsPublic(passwd.isPublic);
-    }
-  }, []);
-
   const generatePasswordSettings = settings.map((setting) => (
     <p
       key={setting.id}
@@ -318,36 +275,39 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
         role="button"
         tabIndex={0}
         className="absolute text-lg not-italic font-normal text-white cursor-pointer font- hover:text-ksv-blue-100"
-        onClick={goBack}
+        onClick={() => navigate(-1)}
       >
         <FontAwesomeIcon icon={faArrowLeft} /> Back
       </i>
 
       <h1 className="mt-8 text-3xl font-bold text-center text-white">
-        {edit ? 'Edit' : 'Create'} Password
+        {title}
       </h1>
 
       <main className="flex justify-center w-screen mt-14">
         <section className="w-2/5 ">
-          <form className="w-fit" onSubmit={(e) => onSubmit(e)}>
+          <form className="w-fit" onSubmit={(e) => onSubmitForm(e)}>
             <div className="relative flex">
               <input
                 className="h-8 py-1 pl-2 text-sm font-medium border-none rounded-lg pr-7 w-72 text-ksv-light-gray bg-ksv-black bg-none focus:outline-none focus:ring-1 focus:ring-black placeholder:text-ksv-light-gray placeholder:text-sm"
                 type={'text'}
-                value={label}
-                onChange={(e) => setLabel(e.target.value)}
+                value={nameInput}
+                onChange={(e) => setNateInput(e.target.value)}
                 placeholder="Label"
                 disabled={type === 'user'}
               />
               <i className="absolute right-0 flex items-center h-8 pl-1 pr-2 rounded-tr-lg rounded-br-lg bg-ksv-black">
-                <FontAwesomeIcon icon={user ? faUser : faTag} color={'white'} />
+                <FontAwesomeIcon
+                  icon={type === 'user' ? faUser : faTag}
+                  color={'white'}
+                />
               </i>
             </div>
             <div className="relative flex mt-6">
               <input
                 className="h-8 py-1 pl-2 pr-8 text-sm font-medium border-none rounded-lg w-72 text-ksv-light-gray bg-ksv-black bg-none focus:outline-none focus:ring-1 focus:ring-black placeholder:text-ksv-light-gray placeholder:text-sm"
                 type={hidePassword ? 'password' : 'text'}
-                value={password}
+                value={passwordInput}
                 onChange={(e) => updatePassword(e.target.value)}
                 placeholder="Password"
               />
@@ -377,10 +337,10 @@ const PasswordForm: React.FC<Props> = ({ edit }) => {
               Password Strength: {passwordStrength.replace('-', ' ')}
             </p>
 
-            {type !== 'user' && (
+            {isPublicAvailable && (
               <p
                 className="flex items-center mt-5 text-sm font-normal text-white cursor-pointer"
-                onClick={() => setIsPublic(!isPublic)}
+                onClick={() => setPublicPassword(!isPublic)}
               >
                 <input
                   onChange={() => {}}

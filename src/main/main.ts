@@ -110,7 +110,7 @@ const createDatabase = async () => {
     database!.logIn(args[0], args[1]);
   });
 
-  ipcMain.on('user:userUpdate', (_event, args: string[]) => {
+  ipcMain.on('user:update', (_event, args: string[]) => {
     database!.updateUser(args[0], args[1], args[2]);
   });
 
@@ -123,11 +123,11 @@ const createDatabase = async () => {
     database!.findAll(args[0].user);
   });
 
-  ipcMain.on('passwd:passwdUpdate', (_event, args: any[]) => {
-    database!.updatePasswd(args[0], args[1]);
+  ipcMain.on('passwd:update', (_event, args: any[]) => {
+    database!.updatePasswd(args[0]);
   });
 
-  ipcMain.on('passwd:passwdDelete', (_event, args: any[]) => {
+  ipcMain.on('passwd:delete', (_event, args: any[]) => {
     database!.deletePasswd(args[0]);
   });
 };

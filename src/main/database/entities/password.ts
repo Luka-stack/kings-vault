@@ -103,7 +103,7 @@ const updatePassword = ({
 }: Password): string => {
   const visibility = isPublic ? '1' : '0';
 
-  return `UPDATE ${PasswordRepository.table} SET label = '${label}', content = '${content}', iv = '${iv}, strength = '${strength}', isPublic = ${visibility}, modified = datetime('now', 'localtime') WHERE id = ${id}`;
+  return `UPDATE ${PasswordRepository.table} SET label = '${label}', content = '${content}', iv = '${iv}', strength = '${strength}', isPublic = ${visibility}, modified = datetime('now', 'localtime') WHERE id = ${id}`;
 };
 
 const deletePassword = (id: number): string => {

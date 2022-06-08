@@ -3,8 +3,8 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import { confirmAlert } from 'react-confirm-alert';
 import {
   faCopy,
-  faEdit,
   faMagnifyingGlass,
+  faPen,
   faTag,
   faTrash,
   faUser,
@@ -13,41 +13,49 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Fragment, useState } from 'react';
 import { Link } from 'react-router-dom';
 import DropDown from '../dropdown';
-import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
 import ConfirmationModal from '../confirmation-modal';
+import { Passwd } from 'renderer/state';
+import PasswordTag from './PasswordTag';
+import {
+  MODIFIED_OPTIONS,
+  orderPasswds,
+  ORDER_OPTIONS,
+  STRENGTH_OPTIONS,
+  VISIBILITY_OPTIONS,
+} from 'renderer/passwds-utilities';
 
 dayjs.extend(relativeTime);
 
-const STRENGTH_OPTIONS = ['All', 'Weak', 'Medium', 'Strong'];
-const MODIFIED_OPTIONS = ['All', '< Week', '< Month', '< Year'];
-const ORDER_OPTIONS = ['Age', 'Label', 'Strength'];
-const VISIBILITY_OPTIONS = ['All', 'Public', 'Private'];
-
 interface Props {
-  isPublic: boolean; // TODO is accounts list
+  passwds: Passwd[];
+  isPublic: boolean;
 }
 
-const FullList: React.FC<Props> = ({ isPublic }) => {
+const FullList: React.FC<Props> = ({ passwds, isPublic }) => {
   const [queryStrength, setQueryStrength] = useState(STRENGTH_OPTIONS[0]);
   const [queryModified, setQueryModified] = useState(MODIFIED_OPTIONS[0]);
-  const [queryOrder, setQueryOrder] = useState(ORDER_OPTIONS[0]);
+  const [queryOrder, setQueryOrder] = useState(ORDER_OPTIONS[1]);
   const [queryVisibility, setQueryVisibility] = useState(VISIBILITY_OPTIONS[0]);
 
-  const passwds = useTypedSelector((state) => {
-    if (isPublic) {
-      if (state.users.user) {
-        return state.passwds.passwds.filter(
-          (passwd) => passwd.userId !== state.users.user!.id
-        );
-      }
+  const [userQuery, setUserQuery] = useState(true);
+  const [labelQuery, setLabelQuery] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
-      return state.passwds.passwds;
+  const onUserQueryClick = (status: boolean) => {
+    setUserQuery(status);
+
+    if (!status) {
+      setLabelQuery(true);
+    }
+  };
+
+  const onLabelQueryClick = (status: boolean) => {
+    if (!userQuery && !status) {
+      return setLabelQuery(true);
     }
 
-    return state.passwds.passwds.filter(
-      (passwd) => passwd.userId === state.users.user!.id
-    );
-  });
+    setLabelQuery(status);
+  };
 
   const copyPassword = (iv: string, content: string): void => {
     const decrypted = window.cipher.decrypt(iv, content);
@@ -62,7 +70,7 @@ const FullList: React.FC<Props> = ({ isPublic }) => {
             title="Delete Password"
             text={`You want to delete password for ${label}`}
             onClick={() => {
-              window.electron.ipcRenderer.sendMessage('passwd:passwdDelete', [
+              window.electron.ipcRenderer.sendMessage('passwd:delete', [
                 passwdId,
               ]);
             }}
@@ -73,24 +81,46 @@ const FullList: React.FC<Props> = ({ isPublic }) => {
     });
   };
 
+  const prepareQuery = (): Passwd[] => {
+    if (userQuery && labelQuery) {
+      return passwds.filter((passwd) => {
+        return (
+          passwd.label.includes(searchQuery) ||
+          passwd.username.includes(searchQuery)
+        );
+      });
+    }
+
+    if (userQuery) {
+      return passwds.filter((passwd) => {
+        return passwd.username.includes(searchQuery);
+      });
+    }
+
+    return passwds.filter((passwd) => {
+      return passwd.label.includes(searchQuery);
+    });
+  };
+
   const generatedPasswords = () => {
-    if (!passwds.length) {
+    let queryPassds = prepareQuery();
+    queryPassds = orderPasswds(queryPassds, queryOrder, queryStrength);
+
+    if (!queryPassds.length) {
       return (
         <p className="mx-auto text-sm font-medium text-white">
-          Currently there is no passwords in vault.
+          Found zero passwods in valut.
         </p>
       );
     }
 
-    return passwds.map((passwd) => (
+    return queryPassds.map((passwd) => (
       <Fragment key={passwd.id}>
         <div className="ksv--pwd-item">
           <div className="flex justify-between">
             <div>
               <h3 className="flex font-medium text-white">{passwd.label}</h3>
-              <p className="mt-1 font-light cursor-pointer text-ksv-light-gray">
-                ************
-              </p>
+              <PasswordTag content={passwd.content} iv={passwd.iv} />
             </div>
 
             <div className="flex flex-row">
@@ -107,7 +137,9 @@ const FullList: React.FC<Props> = ({ isPublic }) => {
 
               <div className="flex-col items-center hidden h-8 p-2 mr-6 text-xs font-medium w-fit text-neutral-400 ksv--display-flex">
                 <p>strength</p>
-                <p className={passwd.strength}>{passwd.strength}</p>
+                <p className={`text-${passwd.strength}`}>
+                  {passwd.strength.replace('-', ' ')}
+                </p>
               </div>
               <div className="flex-col items-center hidden h-8 p-2 mr-5 text-xs font-medium w-fit text-neutral-400 ksv--display-flex">
                 <p>modified</p>
@@ -115,18 +147,21 @@ const FullList: React.FC<Props> = ({ isPublic }) => {
               </div>
 
               <i
-                className="flex items-center h-8 p-2 mt-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700"
+                className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2"
                 onClick={() => copyPassword(passwd.iv, passwd.content)}
               >
                 <FontAwesomeIcon icon={faCopy} color={'white'} />
               </i>
-              <Link to="/edit-password" state={{ type: 'passwd', passwd }}>
-                <i className="flex items-center h-8 p-2 mt-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
-                  <FontAwesomeIcon icon={faEdit} color={'white'} />
+
+              {/* TODO Add user */}
+              <Link to="/edit-password" state={{ passwd }}>
+                <i className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2">
+                  <FontAwesomeIcon icon={faPen} color={'white'} />
                 </i>
               </Link>
+
               <i
-                className="flex items-center h-8 p-2 mt-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700"
+                className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2"
                 onClick={() => deletePassword(passwd.label, passwd.id)}
               >
                 <FontAwesomeIcon icon={faTrash} color={'white'} />
@@ -148,6 +183,8 @@ const FullList: React.FC<Props> = ({ isPublic }) => {
             className="h-8 py-1 pl-2 pr-8 text-sm font-medium border-none rounded-lg w-96 text-ksv-light-gray bg-ksv-black bg-none focus:outline-none focus:ring-1 focus:ring-black placeholder:text-ksv-light-gray placeholder:text-sm"
             type={'text'}
             placeholder="Search"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
 
           <i className="absolute right-0 flex items-center h-8 px-2 rounded-tr-lg rounded-br-lg cursor-pointer bg-ksv-black hover:bg-ksv-gray-700">
@@ -156,32 +193,43 @@ const FullList: React.FC<Props> = ({ isPublic }) => {
         </div>
 
         {isPublic && (
-          <>
-            <i className="flex items-center h-8 p-2 ml-6 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
-              <FontAwesomeIcon icon={faUser} color={'white'} />
-            </i>
-            <i className="flex items-center h-8 p-2 ml-2 rounded-lg cursor-pointer hover:bg-ksv-gray-700">
-              <FontAwesomeIcon icon={faTag} color={'white'} />
-            </i>
-          </>
+          <i
+            className={`flex items-center h-8 p-2 ml-6 border-transparent rounded-lg cursor-pointer active:border-b-2 ${
+              userQuery && 'bg-ksv-black'
+            }`}
+            onClick={() => onUserQueryClick(!userQuery)}
+          >
+            <FontAwesomeIcon icon={faUser} color="white" />
+          </i>
         )}
+        <i
+          className={`flex items-center h-8 p-2 ml-2 border-transparent rounded-lg cursor-pointer active:border-b-2 ${
+            labelQuery && 'bg-ksv-black'
+          }`}
+          onClick={() => onLabelQueryClick(!labelQuery)}
+        >
+          <FontAwesomeIcon icon={faTag} color="white" />
+        </i>
       </div>
 
       <div className="flex justify-between mt-4">
         <div className="">
-          <Link to="/new-password" state={{ type: 'passwd' }}>
+          {/* TODO add users path */}
+          <Link to="/new-password" state={{ passwd: undefined }}>
             <button className="text-white bg-ksv-blue-500 px-3 py-0.5 text-sm rounded-full hover:bg-ksv-blue-700">
               Create password
             </button>
           </Link>
         </div>
         <div className="right-0 flex">
-          <DropDown
-            label="Visibility"
-            option={queryVisibility}
-            options={VISIBILITY_OPTIONS}
-            setOption={setQueryVisibility}
-          />
+          {!isPublic && (
+            <DropDown
+              label="Visibility"
+              option={queryVisibility}
+              options={VISIBILITY_OPTIONS}
+              setOption={setQueryVisibility}
+            />
+          )}
           <DropDown
             label="Strength"
             option={queryStrength}

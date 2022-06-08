@@ -1,14 +1,22 @@
 import { ActionType } from '../action-types';
 import { Passwd } from '../passwd';
 
-export interface PasswdsUpdateAction {
-  type: ActionType.PASSWDS_UPDATE;
-  payload: Passwd[];
+export interface PasswdSaveAction {
+  type: ActionType.PASSWD_SAVE;
+  payload: Passwd;
 }
 
-export interface PasswdDeletedAction {
-  type: ActionType.PASSWD_DELETED;
+export interface PasswdDeleteAction {
+  type: ActionType.PASSWD_DELETE;
   payload: number;
 }
 
-export type Action = PasswdsUpdateAction | PasswdDeletedAction;
+export interface PasswdUpdateAllAction {
+  type: ActionType.PASSWD_UPDATE_ALL;
+  payload: Passwd[];
+}
+
+export type Action =
+  | PasswdSaveAction
+  | PasswdDeleteAction
+  | PasswdUpdateAllAction;

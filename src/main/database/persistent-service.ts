@@ -197,36 +197,22 @@ export class PersistentService {
       this._db.run(stmt, (_result: any, err: Error | null) => {
         if (err) {
           // TODO: Implement error handling
+          this.mainWindow.webContents.send('passwd:saved', ['error']);
           return console.log("Couldn't create password", err);
         }
       });
 
-      stmt = PasswordRepository.findAllStmt(user ? user.id : undefined);
-      this._db.all(stmt, (err: Error | null, result: any[]) => {
-        if (err) {
-          // TODO: Implement error handling
-          return console.log("Couldn't find passwords", err);
-        }
-
-        if (result.length) {
-          return this.mainWindow.webContents.send('passwd:passwdsUpdate', [
-            result,
-          ]);
-        }
-      });
+      return this.mainWindow.webContents.send('passwd:saved', ['success', '']);
     });
   }
 
-  updatePasswd(
-    passwd: {
-      id: number;
-      label: string;
-      password: string;
-      strength: string;
-      isPublic: boolean;
-    },
-    user: { id: number; token: string } | undefined
-  ): void {
+  updatePasswd(passwd: {
+    id: number;
+    label: string;
+    password: string;
+    strength: string;
+    isPublic: boolean;
+  }): void {
     const passwordHash = encrypt(passwd.password);
     const passwordObject = {
       id: passwd.id,
@@ -240,26 +226,16 @@ export class PersistentService {
     let stmt: string;
     this._db.serialize(() => {
       stmt = PasswordRepository.updatePasswordStmt(passwordObject);
+
       this._db.run(stmt, (_result: any, err: Error | null) => {
         if (err) {
           // TODO: Implement error handling
+          this.mainWindow.webContents.send('passwd:saved', ['error']);
           return console.log("Couldn't update password", err);
         }
       });
 
-      stmt = PasswordRepository.findAllStmt(user ? user.id : undefined);
-      this._db.all(stmt, (err: Error | null, result: any[]) => {
-        if (err) {
-          // TODO: Implement error handling
-          return console.log("Couldn't find passwords", err);
-        }
-
-        if (result.length) {
-          return this.mainWindow.webContents.send('passwd:passwdsUpdate', [
-            result,
-          ]);
-        }
-      });
+      return this.mainWindow.webContents.send('passwd:saved', ['success']);
     });
   }
 
@@ -273,7 +249,7 @@ export class PersistentService {
           return console.log("Couldn't delete password", err);
         }
 
-        return this.mainWindow.webContents.send('passwd:passwdDelete', id);
+        return this.mainWindow.webContents.send('passwd:deleted', id);
       });
     });
   }
@@ -286,7 +262,7 @@ export class PersistentService {
         return console.log("Couldn't find passwords", err);
       }
 
-      return this.mainWindow.webContents.send('passwd:passwdsUpdate', [result]);
+      return this.mainWindow.webContents.send('passwd:foundAll', result);
     });
   }
 

@@ -13,7 +13,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
 import { Passwd } from 'renderer/state';
 import ConfirmationModal from '../confirmation-modal';
-import PasswordTag from './PasswordTag';
+import PasswordTag from '../lists/PasswordTag';
 
 const PartialList = () => {
   const navigate = useNavigate();
@@ -37,7 +37,7 @@ const PartialList = () => {
             title="Delete Password"
             text={`You want to delete password for ${label}`}
             onClick={() => {
-              window.electron.ipcRenderer.sendMessage('passwd:passwdDelete', [
+              window.electron.ipcRenderer.sendMessage('passwd:delete', [
                 passwdId,
               ]);
             }}
@@ -67,8 +67,6 @@ const PartialList = () => {
 
     setLabelQuery(status);
   };
-
-  const search = () => {};
 
   const prepareQuery = (): Passwd[] => {
     if (userQuery && labelQuery) {
@@ -118,7 +116,7 @@ const PartialList = () => {
               >
                 <FontAwesomeIcon icon={faCopy} color={'white'} />
               </i>
-              <Link to="/edit-password" state={{ type: 'passwd', passwd }}>
+              <Link to="/edit-password" state={{ passwd }}>
                 <i className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2">
                   <FontAwesomeIcon icon={faPen} color={'white'} />
                 </i>
@@ -156,10 +154,7 @@ const PartialList = () => {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
 
-              <i
-                className="absolute right-0 flex items-center h-8 px-2 border-transparent rounded-tr-lg rounded-br-lg cursor-pointer bg-ksv-black hover:bg-ksv-gray-700 active:border-b-2"
-                onClick={search}
-              >
+              <i className="absolute right-0 flex items-center h-8 px-2 border-transparent rounded-tr-lg rounded-br-lg cursor-pointer bg-ksv-black hover:bg-ksv-gray-700 active:border-b-2">
                 <FontAwesomeIcon icon={faMagnifyingGlass} color="white" />
               </i>
             </div>
@@ -194,7 +189,7 @@ const PartialList = () => {
           >
             See All
           </button>
-          <Link to="/new-password" state={{ type: 'passwd' }}>
+          <Link to="/new-password" state={{ passwd: undefined }}>
             <button className="w-40 p-1 text-sm font-medium text-white rounded-full bg-ksv-blue-500 hover:bg-ksv-blue-700">
               Create New
             </button>

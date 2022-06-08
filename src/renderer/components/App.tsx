@@ -8,14 +8,22 @@ import PublicListView from 'renderer/pages/public-list-view';
 import UserSettings from 'renderer/pages/user-settings';
 import { useEffect } from 'react';
 import { useActions } from 'renderer/hooks/use-actions';
+import ToastPortal from './portals/toast-portal';
+import PublicForm from './public/public-form';
 
 function App() {
-  const { listenOnCreateUser, listenOnPasswdsUpdate, listenOnPasswdDelete } =
-    useActions();
+  const {
+    listenOnCreateUser,
+    listenOnPasswords,
+    listenOnPasswdUpdate,
+    listenOnPasswdDelete,
+  } = useActions();
 
   useEffect(() => {
     listenOnCreateUser();
-    listenOnPasswdsUpdate();
+
+    listenOnPasswords();
+    listenOnPasswdUpdate();
     listenOnPasswdDelete();
   }, []);
 
@@ -26,14 +34,8 @@ function App() {
           <Routes>
             <Route path="/" element={<PublicView />} />
             <Route path="/public-list" element={<PublicListView />} />
-            <Route
-              path="/new-password"
-              element={<PasswordForm edit={false} />}
-            />
-            <Route
-              path="/edit-password"
-              element={<PasswordForm edit={true} />}
-            />
+            <Route path="/new-password" element={<PublicForm edit={false} />} />
+            <Route path="/edit-password" element={<PublicForm edit={true} />} />
             <Route path="/user" element={<UserView />}>
               <Route index element={<FullList isPublic={false} />} />
               <Route
@@ -45,6 +47,8 @@ function App() {
           </Routes>
         </Router>
       </div>
+
+      <ToastPortal autoClose={true} autoCloseTimeout={2000} />
     </div>
   );
 }

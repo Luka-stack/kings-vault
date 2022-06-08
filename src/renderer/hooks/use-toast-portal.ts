@@ -10,7 +10,7 @@ export const useToastPortal = () => {
     div.id = portalId;
     div.setAttribute(
       'style',
-      'position: fixed; top: 10px; right: 10px; z-index: 9999'
+      'position: fixed; bottom: 5px; right: 5px; z-index: 9999'
     );
 
     document.getElementsByTagName('body')[0].prepend(div);

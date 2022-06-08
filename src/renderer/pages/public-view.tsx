@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import AccountForm from 'renderer/components/forms/account-form';
-import PartialList from 'renderer/components/lists/partial-list';
+import PartialList from 'renderer/components/public/partial-list';
 
 const PublicView = () => {
   useEffect(() => {

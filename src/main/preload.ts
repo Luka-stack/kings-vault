@@ -5,11 +5,10 @@ export type Channels =
   | 'user:create'
   | 'user:formRes'
   | 'user:logIn'
-  | 'user:userUpdate'
+  | 'user:update'
   | 'passwd:create'
-  | 'passwd:passwdsUpdate'
-  | 'passwd:passwdUpdate'
-  | 'passwd:passwdDelete'
+  | 'passwd:update'
+  | 'passwd:delete'
   | 'passwd:findAll';
 
 contextBridge.exposeInMainWorld('electron', {

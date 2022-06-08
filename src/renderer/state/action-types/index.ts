@@ -9,8 +9,9 @@ export enum ActionType {
   USER_ERROR = 'user_error',
 
   // passwords
-  PASSWDS_UPDATE = 'passwds_update',
-  PASSWD_DELETED = 'passwd_deleted',
+  PASSWD_UPDATE_ALL = 'passwds_update_all',
+  PASSWD_SAVE = 'passwds_save',
+  PASSWD_DELETE = 'passwds_delete',
 
   // toasts
   APPEND_TOAST = 'append_toast',
