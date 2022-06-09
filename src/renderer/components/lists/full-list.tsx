@@ -2,6 +2,8 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { confirmAlert } from 'react-confirm-alert';
 import {
+  faArrowDown,
+  faArrowUp,
   faCopy,
   faMagnifyingGlass,
   faPen,
@@ -15,7 +17,7 @@ import { Link } from 'react-router-dom';
 import DropDown from '../dropdown';
 import ConfirmationModal from '../confirmation-modal';
 import { Passwd } from 'renderer/state';
-import PasswordTag from './PasswordTag';
+import PasswordTag from './password-tag';
 import {
   MODIFIED_OPTIONS,
   orderPasswds,
@@ -32,9 +34,10 @@ interface Props {
 }
 
 const FullList: React.FC<Props> = ({ passwds, isPublic }) => {
+  const [isASC, setIsASC] = useState(true);
   const [queryStrength, setQueryStrength] = useState(STRENGTH_OPTIONS[0]);
   const [queryModified, setQueryModified] = useState(MODIFIED_OPTIONS[0]);
-  const [queryOrder, setQueryOrder] = useState(ORDER_OPTIONS[1]);
+  const [queryOrder, setQueryOrder] = useState(ORDER_OPTIONS[0]);
   const [queryVisibility, setQueryVisibility] = useState(VISIBILITY_OPTIONS[0]);
 
   const [userQuery, setUserQuery] = useState(true);
@@ -102,9 +105,39 @@ const FullList: React.FC<Props> = ({ passwds, isPublic }) => {
     });
   };
 
+  const generateControls = (passwd: Passwd) => {
+    if (!isPublic || passwd.userId === 1) {
+      return (
+        <>
+          <Link to="/edit-password" state={{ passwd }}>
+            <i className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2">
+              <FontAwesomeIcon icon={faPen} color={'white'} />
+            </i>
+          </Link>
+
+          <i
+            className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2"
+            onClick={() => deletePassword(passwd.label, passwd.id)}
+          >
+            <FontAwesomeIcon icon={faTrash} color={'white'} />
+          </i>
+        </>
+      );
+    }
+
+    return null;
+  };
+
   const generatedPasswords = () => {
     let queryPassds = prepareQuery();
-    queryPassds = orderPasswds(queryPassds, queryOrder, queryStrength);
+    queryPassds = orderPasswds(
+      queryPassds,
+      queryOrder,
+      queryStrength,
+      queryModified,
+      queryVisibility,
+      isASC
+    );
 
     if (!queryPassds.length) {
       return (
@@ -131,6 +164,7 @@ const FullList: React.FC<Props> = ({ passwds, isPublic }) => {
                 </div>
               ) : (
                 <div className="flex-col items-center hidden h-8 p-2 mr-6 text-xs font-medium w-fit text-neutral-400 ksv--display-flex">
+                  <p>password's</p>
                   <p>{passwd.isPublic == true ? 'public' : 'private'}</p>
                 </div>
               )}
@@ -153,19 +187,7 @@ const FullList: React.FC<Props> = ({ passwds, isPublic }) => {
                 <FontAwesomeIcon icon={faCopy} color={'white'} />
               </i>
 
-              {/* TODO Add user */}
-              <Link to="/edit-password" state={{ passwd }}>
-                <i className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2">
-                  <FontAwesomeIcon icon={faPen} color={'white'} />
-                </i>
-              </Link>
-
-              <i
-                className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2"
-                onClick={() => deletePassword(passwd.label, passwd.id)}
-              >
-                <FontAwesomeIcon icon={faTrash} color={'white'} />
-              </i>
+              {generateControls(passwd)}
             </div>
           </div>
 
@@ -214,7 +236,6 @@ const FullList: React.FC<Props> = ({ passwds, isPublic }) => {
 
       <div className="flex justify-between mt-4">
         <div className="">
-          {/* TODO add users path */}
           <Link to="/new-password" state={{ passwd: undefined }}>
             <button className="text-white bg-ksv-blue-500 px-3 py-0.5 text-sm rounded-full hover:bg-ksv-blue-700">
               Create password
@@ -248,6 +269,16 @@ const FullList: React.FC<Props> = ({ passwds, isPublic }) => {
             options={ORDER_OPTIONS}
             setOption={setQueryOrder}
           />
+          <div className="w-4"></div>
+          <i
+            className="absolute bg-ksv-gray-500 hover:bg-ksv-gray-300 px-3 py-0.5 text-sm text-white rounded-full cursor-pointer left-[95%]"
+            onClick={() => setIsASC(!isASC)}
+          >
+            <FontAwesomeIcon
+              icon={isASC ? faArrowUp : faArrowDown}
+              color="white"
+            />
+          </i>
         </div>
       </div>
 

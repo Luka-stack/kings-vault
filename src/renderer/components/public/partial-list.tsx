@@ -13,7 +13,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
 import { Passwd } from 'renderer/state';
 import ConfirmationModal from '../confirmation-modal';
-import PasswordTag from '../lists/PasswordTag';
+import PasswordTag from '../lists/password-tag';
 
 const PartialList = () => {
   const navigate = useNavigate();
@@ -101,7 +101,7 @@ const PartialList = () => {
     }
 
     return queryPassds.map((passwd) => (
-      <Fragment key={passwd.label}>
+      <Fragment key={passwd.id}>
         <div className="ksv--pwd-item">
           <div className="flex justify-between">
             <div>
@@ -116,17 +116,22 @@ const PartialList = () => {
               >
                 <FontAwesomeIcon icon={faCopy} color={'white'} />
               </i>
-              <Link to="/edit-password" state={{ passwd }}>
-                <i className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2">
-                  <FontAwesomeIcon icon={faPen} color={'white'} />
-                </i>
-              </Link>
-              <i
-                className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2"
-                onClick={() => deletePassword(passwd.label, passwd.id)}
-              >
-                <FontAwesomeIcon icon={faTrash} color={'white'} />
-              </i>
+
+              {passwd.userId === 1 && (
+                <>
+                  <Link to="/edit-password" state={{ passwd }}>
+                    <i className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2">
+                      <FontAwesomeIcon icon={faPen} color={'white'} />
+                    </i>
+                  </Link>
+                  <i
+                    className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2"
+                    onClick={() => deletePassword(passwd.label, passwd.id)}
+                  >
+                    <FontAwesomeIcon icon={faTrash} color={'white'} />
+                  </i>
+                </>
+              )}
             </div>
           </div>
 

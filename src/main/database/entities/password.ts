@@ -19,7 +19,7 @@ const FIELDS: DbField[] = [
   },
   {
     name: 'label',
-    type: 'TEXT UNIQUE',
+    type: 'TEXT',
   },
   {
     name: 'content',

@@ -1,17 +1,20 @@
 import { useLocation } from 'react-router-dom';
+import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
 import { PasswordStrength } from 'renderer/passwds-utilities';
 import { Passwd } from 'renderer/state';
-import PasswordForm from '../forms/password-form';
+import PasswordForm from './password-form';
 
 interface Props {
   edit: boolean;
 }
 
-const PublicForm = ({ edit }: Props) => {
+const PasswordFormWrapper = ({ edit }: Props) => {
   const location = useLocation();
   const { passwd } = location.state as {
     passwd?: Passwd;
   };
+
+  const user = useTypedSelector((state) => state.users.user);
 
   const onSubmit = (
     password: string,
@@ -19,8 +22,6 @@ const PublicForm = ({ edit }: Props) => {
     name?: string,
     isPublic?: boolean
   ) => {
-    console.log(password, passwordStrength, name, isPublic, 'Ready to Deploy');
-
     if (edit) {
       return window.electron.ipcRenderer.sendMessage('passwd:update', [
         {
@@ -28,7 +29,7 @@ const PublicForm = ({ edit }: Props) => {
           label: name,
           password,
           strength: passwordStrength,
-          isPublic: true,
+          isPublic: user ? isPublic : true,
         },
       ]);
     }
@@ -38,9 +39,9 @@ const PublicForm = ({ edit }: Props) => {
         label: name,
         password,
         strength: passwordStrength,
-        isPublic: true,
+        isPublic: user ? isPublic : true,
       },
-      null,
+      user,
     ]);
   };
 
@@ -54,15 +55,20 @@ const PublicForm = ({ edit }: Props) => {
         name={passwd.label}
         password={decrypted}
         isPublic={passwd.isPublic}
-        isPublicAvailable={true}
         onSubmit={onSubmit}
+        isPublicAvailable={passwd.userId !== 1}
       />
     );
   }
 
   return (
-    <PasswordForm title="Create Password" type="password" onSubmit={onSubmit} />
+    <PasswordForm
+      title="Create Password"
+      type="password"
+      onSubmit={onSubmit}
+      isPublicAvailable={user !== null}
+    />
   );
 };
 
-export default PublicForm;
+export default PasswordFormWrapper;

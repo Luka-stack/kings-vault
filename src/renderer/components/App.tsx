@@ -1,15 +1,14 @@
 import { MemoryRouter as Router, Route, Routes } from 'react-router-dom';
 
 import PublicView from 'renderer/pages/public-view';
-import PasswordForm from './forms/password-form';
-import FullList from './lists/full-list';
 import UserView from 'renderer/pages/user-view';
 import PublicListView from 'renderer/pages/public-list-view';
 import UserSettings from 'renderer/pages/user-settings';
 import { useEffect } from 'react';
 import { useActions } from 'renderer/hooks/use-actions';
 import ToastPortal from './portals/toast-portal';
-import PublicForm from './public/public-form';
+import PasswordFormWrapper from './forms/password-form-wrapper';
+import PrivateList from './private/private-list';
 
 function App() {
   const {
@@ -34,13 +33,19 @@ function App() {
           <Routes>
             <Route path="/" element={<PublicView />} />
             <Route path="/public-list" element={<PublicListView />} />
-            <Route path="/new-password" element={<PublicForm edit={false} />} />
-            <Route path="/edit-password" element={<PublicForm edit={true} />} />
+            <Route
+              path="/new-password"
+              element={<PasswordFormWrapper edit={false} />}
+            />
+            <Route
+              path="/edit-password"
+              element={<PasswordFormWrapper edit={true} />}
+            />
             <Route path="/user" element={<UserView />}>
-              <Route index element={<FullList isPublic={false} />} />
+              <Route index element={<PrivateList isPublic={false} />} />
               <Route
                 path="/user/public"
-                element={<FullList isPublic={true} />}
+                element={<PrivateList isPublic={true} />}
               />
               <Route path="/user/settings" element={<UserSettings />} />
             </Route>

@@ -340,11 +340,11 @@ const PasswordForm: React.FC<Props> = ({
             {isPublicAvailable && (
               <p
                 className="flex items-center mt-5 text-sm font-normal text-white cursor-pointer"
-                onClick={() => setPublicPassword(!isPublic)}
+                onClick={() => setPublicPassword(!publicPassword)}
               >
                 <input
                   onChange={() => {}}
-                  checked={isPublic}
+                  checked={publicPassword}
                   type="checkbox"
                   className="mr-2 bg-transparent border-gray-400 rounded cursor-pointer text-ksv-gray-500 hover:bg-ksv-gray-700 checked:ring-0 focus:ring-0 focus:ring-offset-0 checked:bg-ksv-gray-500"
                 />

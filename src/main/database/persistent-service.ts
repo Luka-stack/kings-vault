@@ -194,6 +194,9 @@ export class PersistentService {
         passwordObject,
         passwordUser.id!
       );
+
+      console.log(stmt);
+
       this._db.run(stmt, (_result: any, err: Error | null) => {
         if (err) {
           // TODO: Implement error handling
