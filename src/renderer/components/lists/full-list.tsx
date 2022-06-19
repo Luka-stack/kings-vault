@@ -14,10 +14,11 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Fragment, useState } from 'react';
 import { Link } from 'react-router-dom';
-import DropDown from '../dropdown';
-import ConfirmationModal from '../confirmation-modal';
+
+import DropDown from '../shared/dropdown';
+import ConfirmationModal from '../shared/confirmation-modal';
 import { Passwd } from 'renderer/state';
-import PasswordTag from './password-tag';
+import PasswordTag from '../shared/password-tag';
 import {
   MODIFIED_OPTIONS,
   orderPasswds,
@@ -25,6 +26,7 @@ import {
   STRENGTH_OPTIONS,
   VISIBILITY_OPTIONS,
 } from 'renderer/passwds-utilities';
+import Tooltip from '../shared/tooltip';
 
 dayjs.extend(relativeTime);
 
@@ -109,18 +111,32 @@ const FullList: React.FC<Props> = ({ passwds, isPublic }) => {
     if (!isPublic || passwd.userId === 1) {
       return (
         <>
-          <Link to="/edit-password" state={{ passwd }}>
-            <i className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2">
-              <FontAwesomeIcon icon={faPen} color={'white'} />
-            </i>
-          </Link>
+          <div className="mt-2">
+            <Tooltip
+              key={passwd.id + '-edit'}
+              text="Edit password"
+              position="top right"
+            >
+              <Link to="/edit-password" state={{ passwd }}>
+                <i className="flex items-center h-8 p-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2">
+                  <FontAwesomeIcon icon={faPen} color={'white'} />
+                </i>
+              </Link>
+            </Tooltip>
+          </div>
 
-          <i
-            className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2"
-            onClick={() => deletePassword(passwd.label, passwd.id)}
+          <Tooltip
+            key={passwd.id + '-delete'}
+            text="Delete password"
+            position="top right"
           >
-            <FontAwesomeIcon icon={faTrash} color={'white'} />
-          </i>
+            <i
+              className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2"
+              onClick={() => deletePassword(passwd.label, passwd.id)}
+            >
+              <FontAwesomeIcon icon={faTrash} color={'white'} />
+            </i>
+          </Tooltip>
         </>
       );
     }
@@ -142,7 +158,7 @@ const FullList: React.FC<Props> = ({ passwds, isPublic }) => {
     if (!queryPassds.length) {
       return (
         <p className="mx-auto text-sm font-medium text-white">
-          Found zero passwods in valut.
+          Found zero passwods in vault.
         </p>
       );
     }
@@ -180,12 +196,18 @@ const FullList: React.FC<Props> = ({ passwds, isPublic }) => {
                 <p>{dayjs(passwd.modified).fromNow()}</p>
               </div>
 
-              <i
-                className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2"
-                onClick={() => copyPassword(passwd.iv, passwd.content)}
+              <Tooltip
+                key={passwd.id + '-copy'}
+                position="top right"
+                text="Copy password"
               >
-                <FontAwesomeIcon icon={faCopy} color={'white'} />
-              </i>
+                <i
+                  className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2"
+                  onClick={() => copyPassword(passwd.iv, passwd.content)}
+                >
+                  <FontAwesomeIcon icon={faCopy} color={'white'} />
+                </i>
+              </Tooltip>
 
               {generateControls(passwd)}
             </div>
@@ -215,23 +237,27 @@ const FullList: React.FC<Props> = ({ passwds, isPublic }) => {
         </div>
 
         {isPublic && (
-          <i
-            className={`flex items-center h-8 p-2 ml-6 border-transparent rounded-lg cursor-pointer active:border-b-2 ${
-              userQuery && 'bg-ksv-black'
-            }`}
-            onClick={() => onUserQueryClick(!userQuery)}
-          >
-            <FontAwesomeIcon icon={faUser} color="white" />
-          </i>
+          <Tooltip text="Search by Username" position="top center">
+            <i
+              className={`flex items-center h-8 p-2 ml-6 border-transparent rounded-lg cursor-pointer active:border-b-2 ${
+                userQuery && 'bg-ksv-black'
+              }`}
+              onClick={() => onUserQueryClick(!userQuery)}
+            >
+              <FontAwesomeIcon icon={faUser} color="white" />
+            </i>
+          </Tooltip>
         )}
-        <i
-          className={`flex items-center h-8 p-2 ml-2 border-transparent rounded-lg cursor-pointer active:border-b-2 ${
-            labelQuery && 'bg-ksv-black'
-          }`}
-          onClick={() => onLabelQueryClick(!labelQuery)}
-        >
-          <FontAwesomeIcon icon={faTag} color="white" />
-        </i>
+        <Tooltip text="Search by Label" position="top center">
+          <i
+            className={`flex items-center h-8 p-2 ml-2 border-transparent rounded-lg cursor-pointer active:border-b-2 ${
+              labelQuery && 'bg-ksv-black'
+            }`}
+            onClick={() => onLabelQueryClick(!labelQuery)}
+          >
+            <FontAwesomeIcon icon={faTag} color="white" />
+          </i>
+        </Tooltip>
       </div>
 
       <div className="flex justify-between mt-4">

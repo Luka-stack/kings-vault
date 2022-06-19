@@ -21,6 +21,10 @@ if (process.env.NODE_ENV === 'production') {
   sourceMapSupport.install();
 }
 
+if (process.platform === 'win32') {
+  app.setAppUserModelId("King's Vault");
+}
+
 const isDebug =
   process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
 
@@ -114,6 +118,10 @@ const createDatabase = async () => {
     database!.updateUser(args[0], args[1], args[2]);
   });
 
+  ipcMain.on('user:updatePref', (_event, args: any[]) => {
+    database!.uupdatePreferences(args[0], args[1], args[2]);
+  });
+
   // passwd
   ipcMain.on('passwd:create', (_event, args: any[]) => {
     database!.createPasswd(args[0], args[1]);
@@ -121,6 +129,10 @@ const createDatabase = async () => {
 
   ipcMain.on('passwd:findAll', (_event, args: any[]) => {
     database!.findAll(args[0].user);
+  });
+
+  ipcMain.on('passwd:findAllByModified', (_event, args: any[]) => {
+    database!.findAllByModified(args[0], args[1]);
   });
 
   ipcMain.on('passwd:update', (_event, args: any[]) => {

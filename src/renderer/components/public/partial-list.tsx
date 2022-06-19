@@ -12,8 +12,9 @@ import { confirmAlert } from 'react-confirm-alert';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
 import { Passwd } from 'renderer/state';
-import ConfirmationModal from '../confirmation-modal';
-import PasswordTag from '../lists/password-tag';
+import ConfirmationModal from '../shared/confirmation-modal';
+import PasswordTag from '../shared/password-tag';
+import Tooltip from '../shared/tooltip';
 
 const PartialList = () => {
   const navigate = useNavigate();
@@ -95,7 +96,7 @@ const PartialList = () => {
     if (!queryPassds.length) {
       return (
         <p className="mx-auto text-sm font-medium text-white">
-          Found zero passwods in valut.
+          Found zero passwods in vault.
         </p>
       );
     }
@@ -110,26 +111,46 @@ const PartialList = () => {
             </div>
 
             <div className="flex flex-row">
-              <i
-                className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2"
-                onClick={() => copyPassword(passwd.iv, passwd.content)}
+              <Tooltip
+                key={passwd.id + '-copy'}
+                position="top right"
+                text="Copy password"
               >
-                <FontAwesomeIcon icon={faCopy} color={'white'} />
-              </i>
+                <i
+                  className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2"
+                  onClick={() => copyPassword(passwd.iv, passwd.content)}
+                >
+                  <FontAwesomeIcon icon={faCopy} color={'white'} />
+                </i>
+              </Tooltip>
 
               {passwd.userId === 1 && (
                 <>
-                  <Link to="/edit-password" state={{ passwd }}>
-                    <i className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2">
-                      <FontAwesomeIcon icon={faPen} color={'white'} />
-                    </i>
-                  </Link>
-                  <i
-                    className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2"
-                    onClick={() => deletePassword(passwd.label, passwd.id)}
+                  <div className="mt-2">
+                    <Tooltip
+                      key={passwd.id + '-edit'}
+                      text="Edit password"
+                      position="top right"
+                    >
+                      <Link to="/edit-password" state={{ passwd }}>
+                        <i className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2">
+                          <FontAwesomeIcon icon={faPen} color={'white'} />
+                        </i>
+                      </Link>
+                    </Tooltip>
+                  </div>
+                  <Tooltip
+                    key={passwd.id + '-delete'}
+                    text="Delete password"
+                    position="top right"
                   >
-                    <FontAwesomeIcon icon={faTrash} color={'white'} />
-                  </i>
+                    <i
+                      className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2"
+                      onClick={() => deletePassword(passwd.label, passwd.id)}
+                    >
+                      <FontAwesomeIcon icon={faTrash} color={'white'} />
+                    </i>
+                  </Tooltip>
                 </>
               )}
             </div>
@@ -164,22 +185,26 @@ const PartialList = () => {
               </i>
             </div>
 
-            <i
-              className={`flex items-center h-8 p-2 ml-6 border-transparent rounded-lg cursor-pointer active:border-b-2 ${
-                userQuery && 'bg-ksv-black'
-              }`}
-              onClick={() => onUserQueryClick(!userQuery)}
-            >
-              <FontAwesomeIcon icon={faUser} color="white" />
-            </i>
-            <i
-              className={`flex items-center h-8 p-2 ml-2 border-transparent rounded-lg cursor-pointer active:border-b-2 ${
-                labelQuery && 'bg-ksv-black'
-              }`}
-              onClick={() => onLabelQueryClick(!labelQuery)}
-            >
-              <FontAwesomeIcon icon={faTag} color="white" />
-            </i>
+            <Tooltip text="Search by Username" position="top center">
+              <i
+                className={`flex items-center h-8 p-2 ml-6 border-transparent rounded-lg cursor-pointer active:border-b-2 ${
+                  userQuery && 'bg-ksv-black'
+                }`}
+                onClick={() => onUserQueryClick(!userQuery)}
+              >
+                <FontAwesomeIcon icon={faUser} color="white" />
+              </i>
+            </Tooltip>
+            <Tooltip text="Search by Label" position="top center">
+              <i
+                className={`flex items-center h-8 p-2 ml-2 border-transparent rounded-lg cursor-pointer active:border-b-2 ${
+                  labelQuery && 'bg-ksv-black'
+                }`}
+                onClick={() => onLabelQueryClick(!labelQuery)}
+              >
+                <FontAwesomeIcon icon={faTag} color="white" />
+              </i>
+            </Tooltip>
           </div>
 
           <div className="flex-row h-56 p-3 mt-4 space-y-2 overflow-y-auto rounded-lg w-[30rem] bg-ksv-black">

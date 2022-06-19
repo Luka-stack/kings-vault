@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useActions } from 'renderer/hooks/use-actions';
 import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
+import { rankPassword } from 'renderer/passwds-utilities';
 
 const AccountForm = () => {
   const [username, setUsername] = useState('');
@@ -29,7 +30,8 @@ const AccountForm = () => {
   };
 
   const createAccount = () => {
-    createUser(username, password, 'weak');
+    const passwordRank = rankPassword(password);
+    createUser(username, password, passwordRank);
   };
 
   useEffect(() => {

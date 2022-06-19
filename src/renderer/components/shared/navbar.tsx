@@ -1,5 +1,6 @@
 import {
   faArrowRightFromBracket,
+  faBell,
   faGears,
   faUsers,
   faUserShield,
@@ -25,6 +26,9 @@ const Navbar = () => {
       </CustomLink>
       <CustomLink to={'/user/public'}>
         <FontAwesomeIcon icon={faUsers} style={{ fontSize: '1.8rem' }} />
+      </CustomLink>
+      <CustomLink to={'/user/notifications'}>
+        <FontAwesomeIcon icon={faBell} style={{ fontSize: '1.8rem' }} />
       </CustomLink>
       <CustomLink to={'/user/settings'}>
         <FontAwesomeIcon icon={faGears} style={{ fontSize: '1.8rem' }} />

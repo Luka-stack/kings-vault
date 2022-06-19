@@ -4,4 +4,6 @@ export interface User {
   token: string;
   modified: string;
   strength: string;
+  notifyStatus: number;
+  notifyDays: number;
 }

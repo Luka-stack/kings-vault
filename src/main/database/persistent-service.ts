@@ -93,21 +93,31 @@ export class PersistentService {
       token: uuid(),
     };
 
-    const stmt = UserRepository.createUserStmt(user);
-    this._db.run(stmt, (result: any, err: Error | null) => {
-      if (err) {
-        // TODO: Implement error handling
-        return console.log("Couldn't create user", err);
-      }
+    this._db.serialize(() => {
+      let stmt = UserRepository.createUserStmt(user);
+      this._db.run(stmt, (result: any, err: Error | null) => {
+        if (err) {
+          // TODO: Implement error handling
+          return console.log("Couldn't create user", err);
+        }
 
-      if (result && result.errno) {
-        return this.mainWindow.webContents.send('user:formRes', [
-          'error',
-          'Username has to bo unique',
-        ]);
-      }
+        if (result && result.errno) {
+          return this.mainWindow.webContents.send('user:formRes', [
+            'error',
+            'Username has to bo unique',
+          ]);
+        }
+      });
 
-      this.mainWindow.webContents.send('user:formRes', ['success', user]);
+      stmt = UserRepository.logInStmt(username, passwordHash);
+      this._db.get(stmt, (err: Error | null, row: any) => {
+        if (err) {
+          // TODO: Implement error handling
+          return console.log("Couldn't find user", err);
+        }
+
+        this.mainWindow.webContents.send('user:formRes', ['success', row]);
+      });
     });
   }
 
@@ -168,6 +178,41 @@ export class PersistentService {
     });
   }
 
+  uupdatePreferences(
+    id: number,
+    notifyStatus: boolean,
+    notifyDays: number
+  ): void {
+    this._db.serialize(() => {
+      let stmt = UserRepository.updatePreferencesStmt(
+        id,
+        notifyStatus,
+        notifyDays
+      );
+      this._db.run(stmt, (_result: any, err: Error | null) => {
+        if (err) {
+          // TODO: Implement error handling
+          return console.log('Couldnt update user', err);
+        }
+
+        stmt = UserRepository.findByIdStmt(id);
+        this._db.all(stmt, (err: Error | null, result: any[]) => {
+          if (err) {
+            // TODO: Implement error handling
+            return console.log("Couldn't find user", err);
+          }
+
+          if (result.length) {
+            return this.mainWindow.webContents.send(
+              'user:userUpdate',
+              result[0]
+            );
+          }
+        });
+      });
+    });
+  }
+
   // passwords
   createPasswd(
     passwd: {
@@ -194,8 +239,6 @@ export class PersistentService {
         passwordObject,
         passwordUser.id!
       );
-
-      console.log(stmt);
 
       this._db.run(stmt, (_result: any, err: Error | null) => {
         if (err) {
@@ -266,6 +309,29 @@ export class PersistentService {
       }
 
       return this.mainWindow.webContents.send('passwd:foundAll', result);
+    });
+  }
+
+  findAllByModified(userId: number, maxModifiedInMilli: number): void {
+    const stmt = PasswordRepository.findAllSorted(userId);
+    this._db.serialize(() => {
+      this._db.all(stmt, (err: Error | null, result: any[]): void => {
+        if (err) {
+          // TODO: Implement error handling
+          return console.log("Couldn't find passwords", err);
+        }
+
+        const passwords = result.filter(
+          (passwd) =>
+            Date.now() - new Date(passwd.modified).getTime() >
+            maxModifiedInMilli
+        );
+
+        return this.mainWindow.webContents.send(
+          'passwd:foundAllOld',
+          passwords
+        );
+      });
     });
   }
 

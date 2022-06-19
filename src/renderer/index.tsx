@@ -1,3 +1,4 @@
+import 'reactjs-popup/dist/index.css';
 import './index.css';
 import 'tailwindcss/tailwind.css';
 

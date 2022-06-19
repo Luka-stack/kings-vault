@@ -34,6 +34,14 @@ const FIELDS: DbField[] = [
     name: 'token',
     type: 'TEXT',
   },
+  {
+    name: 'notifyStatus',
+    type: 'INTEGER',
+  },
+  {
+    name: 'notifyDays',
+    type: 'INTEGER',
+  },
 ];
 
 const createTable = (): string => {
@@ -53,6 +61,8 @@ const createUser = (user: User): string => {
   values.push(`'${user.strength}'`);
   values.push(`datetime('now', 'localtime')`);
   values.push(`'${user.token!}'`);
+  values.push('1');
+  values.push('30');
 
   return `${base} VALUES(${values})`;
 };
@@ -73,11 +83,22 @@ const updateUser = (
   return `UPDATE ${UserRepository.table} SET password = '${password}', strength = '${strength}', modified = datetime('now', 'localtime') WHERE username = '${username}'`;
 };
 
+const updatePreferences = (
+  id: number,
+  notifyStatus: boolean,
+  notifyDays: number
+): string => {
+  return `UPDATE ${UserRepository.table} SET notifyStatus = '${
+    notifyStatus ? '1' : '0'
+  }', notifyDays = '${notifyDays} WHERE id = ${id}`;
+};
+
 export const UserRepository = {
   table: 'users',
   createTableStmt: createTable,
   createUserStmt: createUser,
   updateUserStmt: updateUser,
+  updatePreferencesStmt: updatePreferences,
   findByIdStmt: findById,
   logInStmt: logIn,
 };

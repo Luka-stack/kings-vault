@@ -62,7 +62,7 @@ const CASE_SETTINGS: PasswordSetting[] = [
 
 interface Props {
   title: string;
-  type: 'user' | 'password';
+  type: 'account' | 'password';
   name?: string;
   password?: string;
   isPublic?: boolean;
@@ -270,7 +270,7 @@ const PasswordForm: React.FC<Props> = ({
   );
 
   return (
-    <div className="w-screen p-4">
+    <div className="w-full p-4">
       <i
         role="button"
         tabIndex={0}
@@ -284,7 +284,7 @@ const PasswordForm: React.FC<Props> = ({
         {title}
       </h1>
 
-      <main className="flex justify-center w-screen mt-14">
+      <main className="flex justify-center w-full mt-14">
         <section className="w-2/5 ">
           <form className="w-fit" onSubmit={(e) => onSubmitForm(e)}>
             <div className="relative flex">
@@ -294,11 +294,11 @@ const PasswordForm: React.FC<Props> = ({
                 value={nameInput}
                 onChange={(e) => setNateInput(e.target.value)}
                 placeholder="Label"
-                disabled={type === 'user'}
+                disabled={type === 'account'}
               />
               <i className="absolute right-0 flex items-center h-8 pl-1 pr-2 rounded-tr-lg rounded-br-lg bg-ksv-black">
                 <FontAwesomeIcon
-                  icon={type === 'user' ? faUser : faTag}
+                  icon={type === 'account' ? faUser : faTag}
                   color={'white'}
                 />
               </i>
@@ -375,7 +375,7 @@ const PasswordForm: React.FC<Props> = ({
             <p className="flex items-center mb-4 text-sm font-normal text-white">
               length
               <input
-                className="w-24 h-5 py-2 ml-2 text-sm border-none rounded-md text-ksv-light-gray bg-ksv-black bg-none focus:outline-none focus:ring-1 focus:ring-black placeholder:text-ksv-light-gray placeholder:text-sm"
+                className="w-24 h-5 py-2 ml-2 text-sm text-white bg-transparent border-0 border-b-2 border-white focus:outline-none focus:ring-0 placeholder:text-stone-400 focus:border-ksv-black"
                 type="text"
                 value={generateLength}
                 onChange={(e) => updateLength(e)}

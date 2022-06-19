@@ -42,6 +42,12 @@ const reducer = (
         error: action.payload,
       };
 
+    case ActionType.USER_UPDATE:
+      return {
+        ...state,
+        user: action.payload,
+      };
+
     default:
       return state;
   }

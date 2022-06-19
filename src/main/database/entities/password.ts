@@ -106,6 +106,14 @@ const updatePassword = ({
   return `UPDATE ${PasswordRepository.table} SET label = '${label}', content = '${content}', iv = '${iv}', strength = '${strength}', isPublic = ${visibility}, modified = datetime('now', 'localtime') WHERE id = ${id}`;
 };
 
+const findAllSorted = (userId: number): string => {
+  const passwdFields =
+    'passwds.id, passwds.label, passwds.content, passwds.iv, passwds.strength, passwds.modified, passwds.isPublic';
+  const userFields = 'users.id as userId, users.username';
+
+  return `SELECT ${passwdFields}, ${userFields} FROM ${UserRepository.table} as users INNER JOIN ${PasswordRepository.table} as passwds ON passwds.user_id = users.id WHERE userId = ${userId} ORDER BY passwds.modified ASC`;
+};
+
 const deletePassword = (id: number): string => {
   return `DELETE FROM ${PasswordRepository.table} WHERE id = ${id}`;
 };
@@ -117,4 +125,5 @@ export const PasswordRepository = {
   updatePasswordStmt: updatePassword,
   deletePasswordStmt: deletePassword,
   findAllStmt: findAll,
+  findAllSorted: findAllSorted,
 };

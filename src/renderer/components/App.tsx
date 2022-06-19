@@ -9,6 +9,8 @@ import { useActions } from 'renderer/hooks/use-actions';
 import ToastPortal from './portals/toast-portal';
 import PasswordFormWrapper from './forms/password-form-wrapper';
 import PrivateList from './private/private-list';
+import Notifications from './private/notifications';
+import AccountUpdate from './private/account-update';
 
 function App() {
   const {
@@ -47,7 +49,9 @@ function App() {
                 path="/user/public"
                 element={<PrivateList isPublic={true} />}
               />
+              <Route path="/user/notifications" element={<Notifications />} />
               <Route path="/user/settings" element={<UserSettings />} />
+              <Route path="/user/update" element={<AccountUpdate />} />
             </Route>
           </Routes>
         </Router>

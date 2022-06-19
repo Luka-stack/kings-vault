@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
+
 import { decrypt } from './cipher';
 
 export type Channels =
@@ -6,10 +7,12 @@ export type Channels =
   | 'user:formRes'
   | 'user:logIn'
   | 'user:update'
+  | 'user:updatePref'
   | 'passwd:create'
   | 'passwd:update'
   | 'passwd:delete'
-  | 'passwd:findAll';
+  | 'passwd:findAll'
+  | 'passwd:findAllByModified';
 
 contextBridge.exposeInMainWorld('electron', {
   ipcRenderer: {

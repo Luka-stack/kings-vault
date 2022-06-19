@@ -51,6 +51,18 @@
   @apply text-emerald-600;
 }
 
+.popup-content {
+  @apply px-5 py-1 mx-auto text-sm font-light text-center text-white border border-black/30 bg-ksv-black;
+}
+
+[role='tooltip'].popup-content {
+  @apply w-fit;
+}
+
+.popup-arrow {
+  @apply text-ksv-black stroke-black/30;
+}
+
 /* Toggle button style */
 
 #toggle-switch:checked {
