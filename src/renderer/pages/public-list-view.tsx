@@ -1,10 +1,20 @@
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FullList from 'renderer/components/lists/full-list';
+import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
 
 const PublicListView = () => {
   const navigate = useNavigate();
+
+  const passwds = useTypedSelector((state) => state.passwds.passwds);
+
+  useEffect(() => {
+    window.electron.ipcRenderer.sendMessage('passwd:findAll', [
+      { user: undefined },
+    ]);
+  }, []);
 
   return (
     <div className="w-full">
@@ -17,7 +27,7 @@ const PublicListView = () => {
         <FontAwesomeIcon icon={faArrowLeft} /> Back
       </i>
 
-      <FullList />
+      <FullList passwds={passwds} isPublic={true} />
     </div>
   );
 };

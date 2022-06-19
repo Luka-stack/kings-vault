@@ -9,6 +9,62 @@
   display: block;
 }
 
+/* Password Ranking Style */
+
+.bar-very-weak {
+  @apply w-[20%] bg-red-600;
+}
+
+.text-very-weak {
+  @apply text-red-600;
+}
+
+.bar-weak {
+  @apply w-[40%] bg-orange-600;
+}
+
+.text-weak {
+  @apply text-orange-600;
+}
+
+.bar-good {
+  @apply w-[60%] bg-yellow-600;
+}
+
+.text-good {
+  @apply text-yellow-600;
+}
+
+.bar-strong {
+  @apply w-[80%] bg-green-600;
+}
+
+.text-strong {
+  @apply text-green-600;
+}
+
+.bar-very-strong {
+  @apply w-full bg-emerald-600;
+}
+
+.text-very-strong {
+  @apply text-emerald-600;
+}
+
+.popup-content {
+  @apply px-5 py-1 mx-auto text-sm font-light text-center text-white border border-black/30 bg-ksv-black;
+}
+
+[role='tooltip'].popup-content {
+  @apply w-fit;
+}
+
+.popup-arrow {
+  @apply text-ksv-black stroke-black/30;
+}
+
+/* Toggle button style */
+
 #toggle-switch:checked {
   background-image: none;
 }
@@ -21,6 +77,14 @@
 #toggle-switch:checked::after {
   @apply translate-x-6 bg-white;
 }
+
+/* Confirmation Modal Style */
+
+.react-confirm-alert-svg {
+  display: none !important;
+}
+
+/* Scrollbar Style */
 
 ::-webkit-scrollbar {
   width: 5px;

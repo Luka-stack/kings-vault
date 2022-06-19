@@ -1,18 +1,9 @@
-/* eslint global-require: off, no-console: off, promise/always-return: off */
-
-/**
- * This module executes inside of electron's main process. You can start
- * electron renderer process from here and communicate with the other processes
- * through IPC.
- *
- * When running `npm run build` or `npm run build:main`, this file is compiled to
- * `./src/main.js` using webpack. This gives us some performance wins.
- */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import { resolveHtmlPath } from './util';
+import { PersistentService } from './database/persistent-service';
 
 export default class AppUpdater {
   constructor() {
@@ -22,16 +13,16 @@ export default class AppUpdater {
   }
 }
 
+let database: PersistentService | null = null;
 let mainWindow: BrowserWindow | null = null;
-
-ipcMain.on('password:new', async (event, arg) => {
-  console.log(event, arg);
-  // event.reply('ipc-example', msgTemplate('pong'));
-});
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
   sourceMapSupport.install();
+}
+
+if (process.platform === 'win32') {
+  app.setAppUserModelId("King's Vault");
 }
 
 const isDebug =
@@ -108,6 +99,51 @@ const createWindow = async () => {
   new AppUpdater();
 };
 
+/// TODO: Extract
+const createDatabase = async () => {
+  const tmpSqlFile =
+    'D:\\Programming\\projects\\king-vault\\.kingsvault.sqlite3';
+  database = new PersistentService(tmpSqlFile, mainWindow!);
+
+  // user
+  ipcMain.on('user:create', (_event, args: string[]) => {
+    database!.createUser(args[0], args[1], args[2]);
+  });
+
+  ipcMain.on('user:logIn', (_event, args: string[]) => {
+    database!.logIn(args[0], args[1]);
+  });
+
+  ipcMain.on('user:update', (_event, args: string[]) => {
+    database!.updateUser(args[0], args[1], args[2]);
+  });
+
+  ipcMain.on('user:updatePref', (_event, args: any[]) => {
+    database!.uupdatePreferences(args[0], args[1], args[2]);
+  });
+
+  // passwd
+  ipcMain.on('passwd:create', (_event, args: any[]) => {
+    database!.createPasswd(args[0], args[1]);
+  });
+
+  ipcMain.on('passwd:findAll', (_event, args: any[]) => {
+    database!.findAll(args[0].user);
+  });
+
+  ipcMain.on('passwd:findAllByModified', (_event, args: any[]) => {
+    database!.findAllByModified(args[0], args[1]);
+  });
+
+  ipcMain.on('passwd:update', (_event, args: any[]) => {
+    database!.updatePasswd(args[0]);
+  });
+
+  ipcMain.on('passwd:delete', (_event, args: any[]) => {
+    database!.deletePasswd(args[0]);
+  });
+};
+
 /**
  * Add event listeners...
  */
@@ -123,7 +159,9 @@ app.on('window-all-closed', () => {
 app
   .whenReady()
   .then(() => {
-    createWindow();
+    createWindow().then(() => {
+      createDatabase();
+    });
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.

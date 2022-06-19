@@ -16,6 +16,7 @@ const DropDown: React.FC<DropDownProps> = ({
   const generatedOptions = options.map((option) => (
     <li
       className="px-3 hover:bg-ksv-gray-300 py-0.5 rounded-lg"
+      key={option}
       onClick={() => setOption(option)}
     >
       {option}
