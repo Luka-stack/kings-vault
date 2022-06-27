@@ -13,6 +13,8 @@ import { app, BrowserWindow, shell, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import { resolveHtmlPath } from './util';
+import { PersistentService } from './persistent-service';
+import { DatabaseModule } from './database/database.module';
 
 export default class AppUpdater {
   constructor() {
@@ -22,6 +24,8 @@ export default class AppUpdater {
   }
 }
 
+let databaseOld: PersistentService | null = null;
+let database: DatabaseModule | null = null;
 let mainWindow: BrowserWindow | null = null;
 
 ipcMain.on('password:new', async (event, arg) => {
@@ -71,7 +75,7 @@ const createWindow = async () => {
     show: false,
     width: 960,
     height: 540,
-    icon: getAssetPath('crown2.png'),
+    icon: getAssetPath('crown.png'),
     resizable: false,
     webPreferences: {
       preload: app.isPackaged
@@ -79,6 +83,8 @@ const createWindow = async () => {
         : path.join(__dirname, '../../.erb/dll/preload.js'),
     },
   });
+
+  mainWindow.removeMenu();
 
   mainWindow.loadURL(resolveHtmlPath('index.html'));
 
@@ -108,6 +114,52 @@ const createWindow = async () => {
   new AppUpdater();
 };
 
+/// TODO: Extract
+const createDatabase = async () => {
+  const sqlFile = 'D:\\Programming\\projects\\king-vault\\.kingsvault.sqlite3';
+  const appDataPath = path.join(app.getPath('userData'), '.kingsvault.sqlite3');
+  console.log(appDataPath);
+  databaseOld = new PersistentService(mainWindow!, sqlFile);
+
+  // user
+  ipcMain.on('user:create', (_event, args: string[]) => {
+    databaseOld!.createUser(args[0], args[1], args[2]);
+  });
+
+  ipcMain.on('user:logIn', (_event, args: string[]) => {
+    databaseOld!.logIn(args[0], args[1]);
+  });
+
+  ipcMain.on('user:update', (_event, args: string[]) => {
+    databaseOld!.updateUser(args[0], args[1], args[2]);
+  });
+
+  ipcMain.on('user:updatePref', (_event, args: any[]) => {
+    databaseOld!.uupdatePreferences(args[0], args[1], args[2]);
+  });
+
+  // passwd
+  ipcMain.on('passwd:create', (_event, args: any[]) => {
+    databaseOld!.createPasswd(args[0], args[1]);
+  });
+
+  ipcMain.on('passwd:findAll', (_event, args: any[]) => {
+    databaseOld!.findAll(args[0].user);
+  });
+
+  ipcMain.on('passwd:findAllByModified', (_event, args: any[]) => {
+    databaseOld!.findAllByModified(args[0], args[1]);
+  });
+
+  ipcMain.on('passwd:update', (_event, args: any[]) => {
+    databaseOld!.updatePasswd(args[0]);
+  });
+
+  ipcMain.on('passwd:delete', (_event, args: any[]) => {
+    databaseOld!.deletePasswd(args[0]);
+  });
+};
+
 /**
  * Add event listeners...
  */
@@ -123,7 +175,12 @@ app.on('window-all-closed', () => {
 app
   .whenReady()
   .then(() => {
-    createWindow();
+    createWindow().then(() => {
+      // createDatabase();
+      const sqlFile =
+        'D:\\Programming\\projects\\king-vault\\.kingsvault.sqlite3';
+      database = new DatabaseModule(sqlFile, mainWindow!);
+    });
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
       // dock icon is clicked and there are no other windows open.

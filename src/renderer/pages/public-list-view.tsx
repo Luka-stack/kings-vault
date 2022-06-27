@@ -6,6 +6,12 @@ import FullList from 'renderer/components/lists/full-list';
 const PublicListView = () => {
   const navigate = useNavigate();
 
+  const passwds = useTypedSelector((state) => state.passwds.passwds);
+
+  useEffect(() => {
+    window.electron.ipcRenderer.sendMessage('passwd:findAll', [undefined]);
+  }, []);
+
   return (
     <div className="w-full">
       <i
