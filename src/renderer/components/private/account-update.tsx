@@ -7,9 +7,11 @@ const AccountUpdate = () => {
 
   const onSubmit = (password: string, passwordStrength: PasswordStrength) => {
     window.electron.ipcRenderer.sendMessage('user:update', [
-      user!.username,
-      password,
-      passwordStrength,
+      {
+        username: user!.username,
+        password,
+        strength: passwordStrength,
+      },
     ]);
   };
 

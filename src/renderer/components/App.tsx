@@ -15,16 +15,17 @@ import AccountUpdate from './private/account-update';
 function App() {
   const {
     listenOnCreateUser,
+    listenOnUpdateUser,
     listenOnPasswords,
-    listenOnPasswdUpdate,
+    listenOnPasswdSave,
     listenOnPasswdDelete,
   } = useActions();
 
   useEffect(() => {
     listenOnCreateUser();
-
+    listenOnUpdateUser();
     listenOnPasswords();
-    listenOnPasswdUpdate();
+    listenOnPasswdSave();
     listenOnPasswdDelete();
   }, []);
 

@@ -112,7 +112,7 @@ const PartialList = () => {
 
             <div className="flex flex-row">
               <Tooltip
-                key={passwd.id + '-copy'}
+                id={passwd.id + '-copy'}
                 position="top right"
                 text="Copy password"
               >
@@ -128,7 +128,7 @@ const PartialList = () => {
                 <>
                   <div className="mt-2">
                     <Tooltip
-                      key={passwd.id + '-edit'}
+                      id={passwd.id + '-edit'}
                       text="Edit password"
                       position="top right"
                     >
@@ -140,7 +140,7 @@ const PartialList = () => {
                     </Tooltip>
                   </div>
                   <Tooltip
-                    key={passwd.id + '-delete'}
+                    id={passwd.id + '-delete'}
                     text="Delete password"
                     position="top right"
                   >

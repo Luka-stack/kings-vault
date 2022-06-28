@@ -18,17 +18,31 @@ export const listenOnPasswords = () => {
   };
 };
 
-export const listenOnPasswdUpdate = () => {
+// TODO passed save
+export const listenOnPasswdSave = () => {
   return async (dispatch: Dispatch<AppendToastAction>) => {
     window.electron.ipcRenderer.on('passwd:saved', (...args: unknown[]) => {
-      const result = args[0] as any[];
+      const result = args[0] as string;
+
+      if (result === 'success') {
+        dispatch({
+          type: ActionType.APPEND_TOAST,
+          payload: {
+            id: uuid(),
+            msg: 'Password has been saved',
+            mode: 'info',
+          },
+        });
+
+        return;
+      }
 
       dispatch({
         type: ActionType.APPEND_TOAST,
         payload: {
           id: uuid(),
-          msg: 'Password has been saved',
-          mode: 'info',
+          msg: 'Error occurred while saving password',
+          mode: 'error',
         },
       });
     });

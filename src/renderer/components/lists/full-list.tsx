@@ -113,7 +113,7 @@ const FullList: React.FC<Props> = ({ passwds, isPublic }) => {
         <>
           <div className="mt-2">
             <Tooltip
-              key={passwd.id + '-edit'}
+              id={passwd.id + '-edit'}
               text="Edit password"
               position="top right"
             >
@@ -126,7 +126,7 @@ const FullList: React.FC<Props> = ({ passwds, isPublic }) => {
           </div>
 
           <Tooltip
-            key={passwd.id + '-delete'}
+            id={passwd.id + '-delete'}
             text="Delete password"
             position="top right"
           >
@@ -197,7 +197,7 @@ const FullList: React.FC<Props> = ({ passwds, isPublic }) => {
               </div>
 
               <Tooltip
-                key={passwd.id + '-copy'}
+                id={passwd.id + '-copy'}
                 position="top right"
                 text="Copy password"
               >

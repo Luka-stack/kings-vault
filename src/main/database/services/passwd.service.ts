@@ -1,54 +1,101 @@
-import { BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 
 import { encrypt } from '../../cipher';
 import { CreatePasswdDto } from '../entities/passwd/passwd';
 import { User } from '../entities/user/user';
 import { PasswdRepository } from '../repositories/passwd.repository';
+import { UserService } from './user.service';
 
 export class PasswdService {
   constructor(
     private readonly repo: PasswdRepository,
     private readonly window: BrowserWindow
   ) {
-    this.startListiners();
+    this.startListeners();
   }
 
-  initTable(): void {
-    this.repo.initTable();
+  async initTable(): Promise<void> {
+    try {
+      await this.repo.initTable();
+    } catch (err) {
+      dialog.showErrorBox('Error occurred', 'Cannot initalizate app');
+      app.exit();
+    }
   }
 
-  async createPasswd(
-    passwd: CreatePasswdDto,
-    user: User | null
-  ): Promise<void> {
+  async create(passwd: CreatePasswdDto, user: User | null): Promise<void> {
     const passwordHash = encrypt(passwd.password);
-    const userId = user ? user.id : 1;
+    const userId = user ? user.id : UserService.ANONYMOUS_USER.id;
 
     try {
-      await this.repo.createPasswd(passwd, passwordHash, userId);
-      this.window.webContents.send('passwd:saved', ['success']);
+      await this.repo.create(passwd, passwordHash, userId);
+      this.window.webContents.send('passwd:saved', 'success');
     } catch (err) {
-      console.log(err);
+      this.window.webContents.send(
+        'passwd:saved',
+        'error',
+        "Coudn't saved password"
+      );
     }
   }
 
   async findAll(userId?: number): Promise<void> {
     try {
       const results = await this.repo.findAll(userId);
-      this.window.webContents.send('passwd:foundAll', results);
+      this.window.webContents.send('passwd:foundAll', 'success', results);
     } catch (err) {
-      console.log(err);
+      this.window.webContents.send(
+        'passwd:foundAll',
+        'error',
+        'Error occurred while fetching passwords'
+      );
     }
   }
 
-  startListiners(): void {
+  async update(passwdId: number, passwd: CreatePasswdDto): Promise<void> {
+    const passwordHash = encrypt(passwd.password);
+
+    try {
+      await this.repo.update(passwdId, passwd, passwordHash);
+      this.window.webContents.send('passwd:saved', 'success');
+    } catch (err) {
+      this.window.webContents.send(
+        'passwd:saved',
+        'error',
+        "Couldn't update password"
+      );
+    }
+  }
+
+  async delete(passwdId: number): Promise<void> {
+    try {
+      await this.repo.delete(passwdId);
+      this.window.webContents.send('passwd:deleted', 'success', passwdId);
+    } catch (err) {
+      this.window.webContents.send(
+        'passwd:deleted',
+        'error',
+        "Couldn't delete password"
+      );
+    }
+  }
+
+  startListeners(): void {
     ipcMain.on('passwd:create', (_, args: any[]) => {
       const [passwd, user] = args;
-      this.createPasswd(passwd, user);
+      this.create(passwd, user);
     });
 
     ipcMain.on('passwd:findAll', (_, args: any[]) => {
       this.findAll(args[0]);
+    });
+
+    ipcMain.on('passwd:update', (_, args: any[]) => {
+      this.update(args[0], args[1]);
+    });
+
+    ipcMain.on('passwd:delete', (_, args: any[]) => {
+      this.delete(args[0]);
     });
   }
 }

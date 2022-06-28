@@ -1,21 +1,26 @@
-import sqlite, { RunResult, Statement } from 'sqlite3';
+import sqlite from 'sqlite3';
 import { CreatePasswdDto, Passwd } from '../entities/passwd/passwd';
 import { PasswdQueries } from '../entities/passwd/queries';
 
 export class PasswdRepository {
   constructor(private readonly dbconnection: sqlite.Database) {}
 
-  initTable() {
-    this.dbconnection.run(
-      PasswdQueries.createTable(),
-      function (runResult: RunResult, err: Error | null) {
-        // console.log(runResult);
-        // console.log(err);
-      }
-    );
+  initTable(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      this.dbconnection.run(
+        PasswdQueries.createTable(),
+        function (err: Error | null) {
+          if (err) {
+            reject();
+          }
+
+          resolve();
+        }
+      );
+    });
   }
 
-  createPasswd(
+  create(
     passwd: CreatePasswdDto,
     passwordHash: { iv: string; content: string },
     userId: number
@@ -23,12 +28,16 @@ export class PasswdRepository {
     return new Promise<void>((resolve, reject) => {
       this.dbconnection.run(
         PasswdQueries.createPasswd(passwd, passwordHash, userId),
-        function (_: RunResult, err: Error | null) {
+        function (err: Error | null) {
           if (err) {
             reject(err);
           }
 
-          resolve();
+          if (this.lastID) {
+            resolve();
+          }
+
+          reject();
         }
       );
     });
@@ -44,6 +53,48 @@ export class PasswdRepository {
           }
 
           resolve(rows);
+        }
+      );
+    });
+  }
+
+  update(
+    id: number,
+    passwd: CreatePasswdDto,
+    passwordHash: { iv: string; content: string }
+  ): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      this.dbconnection.run(
+        PasswdQueries.updatePasswd(id, passwd, passwordHash),
+        function (err: Error | null) {
+          if (err) {
+            reject(err);
+          }
+
+          if (this.changes) {
+            resolve();
+          }
+
+          reject();
+        }
+      );
+    });
+  }
+
+  delete(id: number): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      this.dbconnection.run(
+        PasswdQueries.deletePassword(id),
+        function (err: Error | null) {
+          if (err) {
+            reject(err);
+          }
+
+          if (this.changes) {
+            resolve();
+          }
+
+          reject();
         }
       );
     });

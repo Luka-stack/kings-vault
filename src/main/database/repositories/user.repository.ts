@@ -1,33 +1,114 @@
-import sqlite, { RunResult } from 'sqlite3';
+import sqlite from 'sqlite3';
 
 import { UserQueries } from '../entities/user/queries';
-
-const ANONYMOUS_USER = {
-  username: '_Anonymous',
-  password: '',
-  strength: '',
-};
+import { CreateUserDto, User } from '../entities/user/user';
 
 export class UserRepository {
   constructor(private readonly dbconnection: sqlite.Database) {}
 
-  initTable() {
-    this.dbconnection.run(
-      UserQueries.createTable(),
-      function (runResult: RunResult, err: Error | null) {
-        // console.log(runResult);
-        // console.log(err);
-      }
-    );
+  initTable(): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      this.dbconnection.run(
+        UserQueries.createTable(),
+        function (err: Error | null) {
+          if (err) {
+            reject();
+          }
+
+          resolve();
+        }
+      );
+    });
   }
 
-  createAnonymousUser() {
-    this.dbconnection.run(
-      UserQueries.createUser(ANONYMOUS_USER),
-      function (runResult: RunResult, err: Error | null) {
-        // console.log(runResult);
-        // console.log(err);
-      }
-    );
+  create(user: CreateUserDto): Promise<number> {
+    return new Promise<number>((resolve, reject) => {
+      this.dbconnection.run(
+        UserQueries.createUser(user),
+        function (err: Error | null) {
+          if (err) {
+            reject(err);
+          }
+
+          resolve(this.lastID);
+        }
+      );
+    });
+  }
+
+  update(user: CreateUserDto): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      this.dbconnection.run(
+        UserQueries.updateUser(user),
+        function (err: Error | null) {
+          if (err) {
+            reject(err);
+          }
+
+          if (this.changes) {
+            resolve();
+          }
+
+          reject();
+        }
+      );
+    });
+  }
+
+  updatePreferences(
+    userId: number,
+    notifyStatus: boolean,
+    notifyDays: number
+  ): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      this.dbconnection.run(
+        UserQueries.updatePreferences(userId, notifyStatus, notifyDays),
+        function (err: Error | null) {
+          if (err) {
+            reject(err);
+          }
+
+          if (this.changes) {
+            resolve();
+          }
+
+          reject();
+        }
+      );
+    });
+  }
+
+  findById(id: number): Promise<User> {
+    return new Promise<User>((resolve, reject) => {
+      this.dbconnection.get(
+        UserQueries.findById(id),
+        function (err: Error | null, row: User) {
+          if (err) {
+            reject(err);
+          }
+
+          if (row) {
+            resolve(row);
+          }
+
+          reject();
+        }
+      );
+    });
+  }
+
+  findByCredentials(username: string, password: string): Promise<User> {
+    return new Promise<User>((resolve, reject) => {
+      this.dbconnection.get(
+        UserQueries.findByCredentials(username, password),
+        function (err: Error | null, row: User) {
+          if (err) {
+            reject(err);
+          }
+
+          resolve(row);
+        }
+      );
+    });
   }
 }

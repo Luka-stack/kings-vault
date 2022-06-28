@@ -1,5 +1,7 @@
 import { Dispatch } from 'react';
+import { uuid } from 'renderer/utils';
 import { ActionType } from '../action-types';
+import { AppendToastAction } from '../actions/toasts-actions';
 import { Action, LogOutAction } from '../actions/users-actions';
 import { User } from '../user';
 
@@ -14,9 +16,11 @@ export const createUser = (
     });
 
     window.electron.ipcRenderer.sendMessage('user:create', [
-      username,
-      password,
-      strength,
+      {
+        username,
+        password,
+        strength,
+      },
     ]);
   };
 };
@@ -40,29 +44,50 @@ export const logOut = (): LogOutAction => {
 export const listenOnCreateUser = () => {
   return async (dispatch: Dispatch<Action>) => {
     window.electron.ipcRenderer.on('user:formRes', (...args: unknown[]) => {
-      const arg = args[0] as any[];
-
-      if (arg[0] === 'error') {
+      if (args[0] === 'error') {
         dispatch({
           type: ActionType.USER_FORM_ERROR,
-          payload: arg[1] as string,
+          payload: args[1] as string,
         });
-      } else {
-        dispatch({
-          type: ActionType.USER_FORM_COMPLETE,
-          payload: arg[1] as User,
-        });
+        return;
       }
+
+      dispatch({
+        type: ActionType.USER_FORM_COMPLETE,
+        payload: args[1] as User,
+      });
     });
   };
 };
 
 export const listenOnUpdateUser = () => {
-  return async (dispatch: Dispatch<Action>) => {
+  return async (dispatch: Dispatch<Action | AppendToastAction>) => {
     window.electron.ipcRenderer.on('user:userUpdate', (...args: unknown[]) => {
+      if (args[0] === 'success') {
+        dispatch({
+          type: ActionType.USER_UPDATE,
+          payload: args[1] as User,
+        });
+
+        dispatch({
+          type: ActionType.APPEND_TOAST,
+          payload: {
+            id: uuid(),
+            msg: 'User successfully updated',
+            mode: 'info',
+          },
+        });
+
+        return;
+      }
+
       dispatch({
-        type: ActionType.USER_UPDATE,
-        payload: args[0] as User,
+        type: ActionType.APPEND_TOAST,
+        payload: {
+          id: uuid(),
+          msg: args[1] as string,
+          mode: 'error',
+        },
       });
     });
   };

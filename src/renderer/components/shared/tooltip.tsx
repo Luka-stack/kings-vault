@@ -16,15 +16,15 @@ type PopupPosition =
   | 'center center';
 
 interface Props {
-  key?: string;
+  id?: string;
   position: PopupPosition;
   text: string;
 }
 
-const Tooltip: React.FC<Props> = ({ key, position, text, children }) => {
+const Tooltip: React.FC<Props> = ({ id, position, text, children }) => {
   return (
     <Popup
-      key={key}
+      key={id}
       position={position}
       on={['hover']}
       closeOnDocumentClick

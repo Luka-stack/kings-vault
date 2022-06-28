@@ -4,6 +4,8 @@ export interface User {
   password: string;
   strength: string;
   modified: string;
+  notifyStatus: number;
+  notifyDays: number;
 }
 
 export interface CreateUserDto {

@@ -70,12 +70,12 @@ export const UserQueries = {
   },
 
   updatePreferences: (
-    username: string,
+    id: number,
     notifyStatus: boolean,
     notifyDays: number
   ): string => {
-    return `UPDATE ${UserQueries.table} SET notifyStatus = '${
+    return `UPDATE ${UserQueries.table} SET notifyStatus = ${
       notifyStatus ? '1' : '0'
-    }', notifyDays = '${notifyDays} WHERE username = '${username}'`;
+    }, notifyDays = ${notifyDays} WHERE id = ${id}`;
   },
 };

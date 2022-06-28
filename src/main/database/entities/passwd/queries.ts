@@ -97,7 +97,7 @@ export const PasswdQueries = {
     return `SELECT ${passwdFields}, ${userFields} FROM ${UserQueries.table} as users INNER JOIN ${PasswdQueries.table} as passwds ON passwds.user_id = users.id WHERE userId = ${userId} ORDER BY passwds.modified ASC`;
   },
 
-  updatePassword: (
+  updatePasswd: (
     id: number,
     { label, strength, isPublic }: CreatePasswdDto,
     { content, iv }: { content: string; iv: string }

@@ -24,8 +24,8 @@ const PasswordFormWrapper = ({ edit }: Props) => {
   ) => {
     if (edit) {
       return window.electron.ipcRenderer.sendMessage('passwd:update', [
+        passwd!.id,
         {
-          id: passwd!.id,
           label: name,
           password,
           strength: passwordStrength,
