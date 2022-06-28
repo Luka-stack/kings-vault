@@ -1,15 +1,5 @@
-/* eslint global-require: off, no-console: off, promise/always-return: off */
-
-/**
- * This module executes inside of electron's main process. You can start
- * electron renderer process from here and communicate with the other processes
- * through IPC.
- *
- * When running `npm run build` or `npm run build:main`, this file is compiled to
- * `./src/main.js` using webpack. This gives us some performance wins.
- */
 import path from 'path';
-import { app, BrowserWindow, shell, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, shell } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import { resolveHtmlPath } from './util';
@@ -28,14 +18,13 @@ let databaseOld: PersistentService | null = null;
 let database: DatabaseModule | null = null;
 let mainWindow: BrowserWindow | null = null;
 
-ipcMain.on('password:new', async (event, arg) => {
-  console.log(event, arg);
-  // event.reply('ipc-example', msgTemplate('pong'));
-});
-
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
   sourceMapSupport.install();
+}
+
+if (process.platform === 'win32') {
+  app.setAppUserModelId("King's Vault");
 }
 
 const isDebug =

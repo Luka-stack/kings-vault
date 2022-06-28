@@ -1,7 +1,9 @@
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FullList from 'renderer/components/lists/full-list';
+import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
 
 const PublicListView = () => {
   const navigate = useNavigate();
@@ -23,7 +25,7 @@ const PublicListView = () => {
         <FontAwesomeIcon icon={faArrowLeft} /> Back
       </i>
 
-      <FullList />
+      <FullList passwds={passwds} isPublic={true} />
     </div>
   );
 };

@@ -1,17 +1,21 @@
 import {
   faArrowRightFromBracket,
+  faBell,
   faGears,
   faUsers,
   faUserShield,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useNavigate } from 'react-router-dom';
+import { useActions } from 'renderer/hooks/use-actions';
 import CustomLink from './link';
 
 const Navbar = () => {
   const navigate = useNavigate();
+  const { logOut } = useActions();
 
   const logout = () => {
+    logOut();
     navigate('/');
   };
 
@@ -22,6 +26,9 @@ const Navbar = () => {
       </CustomLink>
       <CustomLink to={'/user/public'}>
         <FontAwesomeIcon icon={faUsers} style={{ fontSize: '1.8rem' }} />
+      </CustomLink>
+      <CustomLink to={'/user/notifications'}>
+        <FontAwesomeIcon icon={faBell} style={{ fontSize: '1.8rem' }} />
       </CustomLink>
       <CustomLink to={'/user/settings'}>
         <FontAwesomeIcon icon={faGears} style={{ fontSize: '1.8rem' }} />
