@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FullList from 'renderer/components/lists/full-list';
 import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
+import { IpcPasswd } from 'renderer/ipc-connector';
 
 const PublicListView = () => {
   const navigate = useNavigate();
@@ -11,9 +12,7 @@ const PublicListView = () => {
   const passwds = useTypedSelector((state) => state.passwds.passwds);
 
   useEffect(() => {
-    window.electron.ipcRenderer.sendMessage('passwd:findAll', [
-      { user: undefined },
-    ]);
+    IpcPasswd.findAll();
   }, []);
 
   return (

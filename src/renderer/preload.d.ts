@@ -1,4 +1,5 @@
 import { Channels } from 'main/preload';
+import { CreateUserDto } from './state';
 
 declare global {
   interface Window {

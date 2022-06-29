@@ -23,16 +23,15 @@ const reducer = (
         user: null,
       };
 
-    case ActionType.CREATE_USER:
+    case ActionType.LOG_IN:
       return {
         ...state,
         error: null,
       };
 
-    case ActionType.USER_FORM_COMPLETE:
+    case ActionType.LOG_IN_COMPLETE:
       return {
         ...state,
-        error: null,
         user: action.payload,
       };
 

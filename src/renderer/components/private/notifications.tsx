@@ -3,14 +3,15 @@ import relativeTime from 'dayjs/plugin/relativeTime';
 import { Fragment, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
+import { IpcUser } from 'renderer/ipc-connector';
 
 dayjs.extend(relativeTime);
 
 const Notifications = () => {
   const [daysError, setDaysError] = useState(false);
+  const [checked, setChecked] = useState(false);
 
   const daysRef = useRef<any>();
-  const statusRef = useRef<any>();
 
   const { id, notifyStatus, notifyDays } = useTypedSelector(
     (state) => state.users.user!
@@ -23,7 +24,6 @@ const Notifications = () => {
 
   const onSavePref = () => {
     const daysInput: HTMLInputElement = daysRef.current;
-    const statusInput: HTMLInputElement = statusRef.current;
 
     let days = +(daysInput.value || '60');
 
@@ -31,15 +31,11 @@ const Notifications = () => {
       return setDaysError(true);
     }
 
-    if (days === notifyDays && +statusInput.checked === notifyStatus) {
+    if (days === notifyDays && +checked === notifyStatus) {
       return;
     }
 
-    window.electron.ipcRenderer.sendMessage('user:updatePref', [
-      id,
-      statusInput.checked,
-      days,
-    ]);
+    IpcUser.updateUserPreferences(id, checked, days);
 
     setDaysError(false);
   };
@@ -95,17 +91,17 @@ const Notifications = () => {
       </h3>
 
       <div className="flex items-center justify-around">
-        <div className="flex items-center">
+        <div className="flex items-center w-24">
           <label htmlFor="toggle-switch" className="w-fit">
             <input
               type="checkbox"
               id="toggle-switch"
-              className="relative w-12 h-6 mr-4 bg-white border-0 rounded-full appearance-none cursor-pointer bg-opacity-3 text-ksv-black checked:ring-0 focus:ring-0 focus:ring-offset-0"
+              className="relative w-12 h-6 mr-4 border-0 rounded-full appearance-none cursor-pointer ring-1 ring-ksv-black bg-ksv-black/20 bg-opacity-3 text-ksv-black checked:ring-0 focus:ring-1 focus:ring-ksv-black focus:ring-offset-0"
               defaultChecked={notifyStatus === 1}
-              ref={statusRef}
+              onChange={(e) => setChecked(e.target.checked)}
             />
           </label>
-          <i className="not-italic text-white">{notifyStatus ? 'On' : 'Off'}</i>
+          <i className="not-italic text-white">{checked ? 'On' : 'Off'}</i>
         </div>
 
         <div className="flex items-center space-x-2">

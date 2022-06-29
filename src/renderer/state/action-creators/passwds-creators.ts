@@ -4,33 +4,41 @@ import { ActionType } from '../action-types';
 import { Action } from '../actions/passwds-actions';
 import { AppendToastAction } from '../actions/toasts-actions';
 import { Passwd } from '../passwd';
+import { addToast } from './toasts-creators';
 
 export const listenOnPasswords = () => {
-  return async (dispatch: Dispatch<Action>) => {
+  return async (dispatch: Dispatch<Action | AppendToastAction>) => {
     window.electron.ipcRenderer.on('passwd:foundAll', (...args: unknown[]) => {
-      const result = args[0] as Passwd[];
+      if (args[0] === 'success') {
+        dispatch({
+          type: ActionType.PASSWD_UPDATE_ALL,
+          payload: args[1] as Passwd[],
+        });
+        return;
+      }
 
-      dispatch({
-        type: ActionType.PASSWD_UPDATE_ALL,
-        payload: result,
-      });
+      dispatch(addToast(args[1] as string, 'error'));
     });
   };
 };
 
-export const listenOnPasswdUpdate = () => {
+export const listenOnPasswdSave = () => {
   return async (dispatch: Dispatch<AppendToastAction>) => {
     window.electron.ipcRenderer.on('passwd:saved', (...args: unknown[]) => {
-      const result = args[0] as any[];
+      if (args[0] === 'success') {
+        dispatch({
+          type: ActionType.APPEND_TOAST,
+          payload: {
+            id: uuid(),
+            msg: 'Password has been saved',
+            mode: 'info',
+          },
+        });
 
-      dispatch({
-        type: ActionType.APPEND_TOAST,
-        payload: {
-          id: uuid(),
-          msg: 'Password has been saved',
-          mode: 'info',
-        },
-      });
+        return;
+      }
+
+      dispatch(addToast(args[1] as string, 'error'));
     });
   };
 };
@@ -38,21 +46,17 @@ export const listenOnPasswdUpdate = () => {
 export const listenOnPasswdDelete = () => {
   return async (dispatch: Dispatch<Action | AppendToastAction>) => {
     window.electron.ipcRenderer.on('passwd:deleted', (...args: unknown[]) => {
-      const result = args[0] as number;
+      if (args[0] === 'success') {
+        dispatch({
+          type: ActionType.PASSWD_DELETE,
+          payload: args[1] as number,
+        });
 
-      dispatch({
-        type: ActionType.APPEND_TOAST,
-        payload: {
-          id: uuid(),
-          msg: 'Password has been deleted',
-          mode: 'info',
-        },
-      });
+        dispatch(addToast('Password has been deleted', 'info'));
+        return;
+      }
 
-      dispatch({
-        type: ActionType.PASSWD_DELETE,
-        payload: result,
-      });
+      dispatch(addToast(args[1] as string, 'error'));
     });
   };
 };

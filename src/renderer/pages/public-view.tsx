@@ -1,12 +1,11 @@
 import { useEffect } from 'react';
 import AccountForm from 'renderer/components/forms/account-form';
 import PartialList from 'renderer/components/public/partial-list';
+import { IpcPasswd } from 'renderer/ipc-connector';
 
 const PublicView = () => {
   useEffect(() => {
-    window.electron.ipcRenderer.sendMessage('passwd:findAll', [
-      { user: undefined },
-    ]);
+    IpcPasswd.findAll();
   }, []);
 
   return (

@@ -11,6 +11,7 @@ import { Fragment, useState } from 'react';
 import { confirmAlert } from 'react-confirm-alert';
 import { Link, useNavigate } from 'react-router-dom';
 import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
+import { IpcPasswd } from 'renderer/ipc-connector';
 import { Passwd } from 'renderer/state';
 import ConfirmationModal from '../shared/confirmation-modal';
 import PasswordTag from '../shared/password-tag';
@@ -37,11 +38,7 @@ const PartialList = () => {
           <ConfirmationModal
             title="Delete Password"
             text={`You want to delete password for ${label}`}
-            onClick={() => {
-              window.electron.ipcRenderer.sendMessage('passwd:delete', [
-                passwdId,
-              ]);
-            }}
+            onClick={() => IpcPasswd.deletePasswd(passwdId)}
             onClose={onClose}
           />
         );
@@ -112,7 +109,7 @@ const PartialList = () => {
 
             <div className="flex flex-row">
               <Tooltip
-                key={passwd.id + '-copy'}
+                id={passwd.id + '-copy'}
                 position="top right"
                 text="Copy password"
               >
@@ -128,19 +125,19 @@ const PartialList = () => {
                 <>
                   <div className="mt-2">
                     <Tooltip
-                      key={passwd.id + '-edit'}
+                      id={passwd.id + '-edit'}
                       text="Edit password"
                       position="top right"
                     >
                       <Link to="/edit-password" state={{ passwd }}>
-                        <i className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2">
+                        <i className="flex items-center h-8 p-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2">
                           <FontAwesomeIcon icon={faPen} color={'white'} />
                         </i>
                       </Link>
                     </Tooltip>
                   </div>
                   <Tooltip
-                    key={passwd.id + '-delete'}
+                    id={passwd.id + '-delete'}
                     text="Delete password"
                     position="top right"
                   >

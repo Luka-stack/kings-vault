@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Outlet, useNavigate } from 'react-router-dom';
 import Navbar from 'renderer/components/shared/navbar';
 import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
+import { IpcPasswd } from 'renderer/ipc-connector';
 import { Scheduler } from 'renderer/scheduler';
 import { scheduledFunction } from 'renderer/scheduler/notifications';
 
@@ -15,9 +16,7 @@ const UserView = () => {
   const { user } = useTypedSelector((state) => state.users);
 
   useEffect(() => {
-    window.electron.ipcRenderer.sendMessage('passwd:findAll', [
-      { user: user!.id },
-    ]);
+    IpcPasswd.findAll(user!.id);
 
     () => {
       scheduler.stop();

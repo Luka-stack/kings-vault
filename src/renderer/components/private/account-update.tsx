@@ -1,4 +1,5 @@
 import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
+import { IpcUser } from 'renderer/ipc-connector';
 import { PasswordStrength } from 'renderer/passwds-utilities';
 import PasswordForm from '../forms/password-form';
 
@@ -6,11 +7,11 @@ const AccountUpdate = () => {
   const user = useTypedSelector((state) => state.users.user);
 
   const onSubmit = (password: string, passwordStrength: PasswordStrength) => {
-    window.electron.ipcRenderer.sendMessage('user:update', [
-      user!.username,
+    IpcUser.updateUser({
+      username: user!.username,
       password,
-      passwordStrength,
-    ]);
+      strength: passwordStrength,
+    });
   };
 
   return (

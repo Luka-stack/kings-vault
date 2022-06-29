@@ -6,10 +6,8 @@ export interface Passwd {
   strength: string;
   isPublic: boolean;
   modified: string;
-
-  // user fields
-  username: string;
   userId: number;
+  username: string;
 }
 
 export interface CreatePasswdDto {

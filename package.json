@@ -31,7 +31,7 @@
   },
   "build": {
     "productName": "KingVault",
-    "appId": "org.lukastack.KingVault",
+    "appId": "com.lukastack.KingVault",
     "asar": true,
     "asarUnpack": "**\\*.{node,dll}",
     "files": [
@@ -69,9 +69,18 @@
       ]
     },
     "win": {
+      "icon": "/assets/crown.ico",
       "target": [
         "nsis"
       ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowElevation": true,
+      "perMachine": true,
+      "createDesktopShortcut": true,
+      "allowToChangeInstallationDirectory": true,
+      "deleteAppDataOnUninstall": true
     },
     "linux": {
       "target": [

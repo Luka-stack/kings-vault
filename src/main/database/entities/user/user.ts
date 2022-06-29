@@ -1,6 +1,7 @@
 export interface User {
   id: number;
   username: string;
+  password: string;
   strength: string;
   modified: string;
   notifyStatus: number;

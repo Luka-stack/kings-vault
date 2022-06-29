@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useActions } from 'renderer/hooks/use-actions';
 import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
-import { rankPassword } from 'renderer/passwds-utilities';
 
 const AccountForm = () => {
   const [username, setUsername] = useState('');
@@ -27,11 +26,6 @@ const AccountForm = () => {
     }
 
     logIn(username, password);
-  };
-
-  const createAccount = () => {
-    const passwordRank = rankPassword(password);
-    createUser(username, password, passwordRank);
   };
 
   useEffect(() => {
@@ -94,7 +88,7 @@ const AccountForm = () => {
 
         <div className="mt-4">
           <button
-            onClick={createAccount}
+            onClick={() => createUser(username, password)}
             disabled={disabled}
             className="h-8 p-1 text-sm font-medium text-white rounded-full w-72 bg-ksv-blue-500 hover:bg-ksv-blue-700"
           >

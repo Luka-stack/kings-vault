@@ -27,6 +27,7 @@ import {
   VISIBILITY_OPTIONS,
 } from 'renderer/passwds-utilities';
 import Tooltip from '../shared/tooltip';
+import { IpcPasswd } from 'renderer/ipc-connector';
 
 dayjs.extend(relativeTime);
 
@@ -74,11 +75,7 @@ const FullList: React.FC<Props> = ({ passwds, isPublic }) => {
           <ConfirmationModal
             title="Delete Password"
             text={`You want to delete password for ${label}`}
-            onClick={() => {
-              window.electron.ipcRenderer.sendMessage('passwd:delete', [
-                passwdId,
-              ]);
-            }}
+            onClick={() => IpcPasswd.deletePasswd(passwdId)}
             onClose={onClose}
           />
         );
@@ -113,7 +110,7 @@ const FullList: React.FC<Props> = ({ passwds, isPublic }) => {
         <>
           <div className="mt-2">
             <Tooltip
-              key={passwd.id + '-edit'}
+              id={passwd.id + '-edit'}
               text="Edit password"
               position="top right"
             >
@@ -126,7 +123,7 @@ const FullList: React.FC<Props> = ({ passwds, isPublic }) => {
           </div>
 
           <Tooltip
-            key={passwd.id + '-delete'}
+            id={passwd.id + '-delete'}
             text="Delete password"
             position="top right"
           >
@@ -197,7 +194,7 @@ const FullList: React.FC<Props> = ({ passwds, isPublic }) => {
               </div>
 
               <Tooltip
-                key={passwd.id + '-copy'}
+                id={passwd.id + '-copy'}
                 position="top right"
                 text="Copy password"
               >
