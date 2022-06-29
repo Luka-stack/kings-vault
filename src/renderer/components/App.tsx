@@ -14,7 +14,7 @@ import AccountUpdate from './private/account-update';
 
 function App() {
   const {
-    listenOnCreateUser,
+    listenOnLogIn,
     listenOnUpdateUser,
     listenOnPasswords,
     listenOnPasswdSave,
@@ -22,8 +22,9 @@ function App() {
   } = useActions();
 
   useEffect(() => {
-    listenOnCreateUser();
+    listenOnLogIn();
     listenOnUpdateUser();
+
     listenOnPasswords();
     listenOnPasswdSave();
     listenOnPasswdDelete();
@@ -44,6 +45,7 @@ function App() {
               path="/edit-password"
               element={<PasswordFormWrapper edit={true} />}
             />
+            <Route path="/user-update" element={<AccountUpdate />} />
             <Route path="/user" element={<UserView />}>
               <Route index element={<PrivateList isPublic={false} />} />
               <Route
@@ -52,7 +54,6 @@ function App() {
               />
               <Route path="/user/notifications" element={<Notifications />} />
               <Route path="/user/settings" element={<UserSettings />} />
-              <Route path="/user/update" element={<AccountUpdate />} />
             </Route>
           </Routes>
         </Router>

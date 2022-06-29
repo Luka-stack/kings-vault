@@ -4,7 +4,6 @@ import { decrypt } from './cipher';
 
 export type Channels =
   | 'user:create'
-  | 'user:formRes'
   | 'user:logIn'
   | 'user:update'
   | 'user:updatePref'

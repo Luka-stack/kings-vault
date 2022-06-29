@@ -38,10 +38,10 @@ export class UserService {
     try {
       const id = await this.repo.create(user);
       const result = await this.repo.findById(id);
-      this.window.webContents.send('user:formRes', 'success', result);
+      this.window.webContents.send('user:logIn', 'success', result);
     } catch (err: any) {
       this.window.webContents.send(
-        'user:formRes',
+        'user:logIn',
         'error',
         err.errno === 19 ? 'Username must be unique' : "Coudn't create user"
       );
@@ -55,17 +55,13 @@ export class UserService {
       const result = await this.repo.findByCredentials(username, passwordHash);
 
       if (result) {
-        return this.window.webContents.send('user:formRes', 'success', result);
+        return this.window.webContents.send('user:logIn', 'success', result);
       }
 
-      this.window.webContents.send(
-        'user:formRes',
-        'error',
-        'Wrong credentials'
-      );
+      this.window.webContents.send('user:logIn', 'error', 'Wrong credentials');
     } catch (err) {
       this.window.webContents.send(
-        'user:formRes',
+        'user:logIn',
         'error',
         'Error occurred while logging in'
       );

@@ -23,12 +23,12 @@ export class PasswdService {
     }
   }
 
-  async create(passwd: CreatePasswdDto, user: User | null): Promise<void> {
+  async create(passwd: CreatePasswdDto, userId: number | null): Promise<void> {
     const passwordHash = encrypt(passwd.password);
-    const userId = user ? user.id : UserService.ANONYMOUS_USER.id;
+    const id = userId || UserService.ANONYMOUS_USER.id;
 
     try {
-      await this.repo.create(passwd, passwordHash, userId);
+      await this.repo.create(passwd, passwordHash, id);
       this.window.webContents.send('passwd:saved', 'success');
     } catch (err) {
       this.window.webContents.send(

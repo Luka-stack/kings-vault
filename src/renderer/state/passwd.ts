@@ -11,3 +11,10 @@ export interface Passwd {
   username: string;
   userId: number;
 }
+
+export interface CreatePasswdDto {
+  label: string;
+  password: string;
+  strength: string;
+  isPublic: boolean;
+}

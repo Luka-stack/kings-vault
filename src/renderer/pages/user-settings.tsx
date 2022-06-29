@@ -21,13 +21,14 @@ const UserSettings = () => {
           <p className="mb-1">
             Last Modified: {dayjs(user.modified).fromNow()}
           </p>
-          <p>
+          <p className="flex items-center">
             Strengh:
-            <i className={`ml-2 not-italic font-medium text-${user.strength}`}>
-              {user.strength.replace('-', ' ')}
-            </i>
+            <i className="ml-2 not-italic">{user.strength.replace('-', ' ')}</i>
+            <div
+              className={`w-3 h-3 rounded-full ml-2 bar-${user.strength}`}
+            ></div>
           </p>
-          <Link to="/user/update">
+          <Link to="/user-update">
             <button className="w-48 px-3 py-1 mt-4 text-white rounded-full bg-ksv-blue-500 hover:bg-ksv-blue-700">
               Change Password
             </button>
@@ -39,12 +40,22 @@ const UserSettings = () => {
         <div className="flex flex-col ml-10 text-white">
           <h3 className="mb-4 text-2xl font-medium">Vault</h3>
           <p>
-            Private passwords:
-            {passwd.filter((passwd) => passwd.isPublic == false).length}
+            {`Private passwords: 
+            ${
+              passwd.filter(
+                (passwd) =>
+                  passwd.isPublic == false && passwd.userId === user.id
+              ).length
+            }`}
           </p>
           <p className="mt-6">
-            Public password:
-            {passwd.filter((passwd) => passwd.isPublic == true).length}
+            {`Public password: 
+            ${
+              passwd.filter(
+                (passwd) => passwd.isPublic == true && passwd.userId === user.id
+              ).length
+            }
+            `}
           </p>
         </div>
       </section>

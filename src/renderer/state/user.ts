@@ -6,3 +6,9 @@ export interface User {
   notifyStatus: number;
   notifyDays: number;
 }
+
+export interface CreateUserDto {
+  username: string;
+  password: string;
+  strength: string;
+}

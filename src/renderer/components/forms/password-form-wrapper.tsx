@@ -1,5 +1,6 @@
 import { useLocation } from 'react-router-dom';
 import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
+import { IpcPasswd } from 'renderer/ipc-connector';
 import { PasswordStrength } from 'renderer/passwds-utilities';
 import { Passwd } from 'renderer/state';
 import PasswordForm from './password-form';
@@ -18,31 +19,22 @@ const PasswordFormWrapper = ({ edit }: Props) => {
 
   const onSubmit = (
     password: string,
-    passwordStrength: PasswordStrength,
+    strength: PasswordStrength,
     name?: string,
     isPublic?: boolean
   ) => {
+    const passwdDto = {
+      label: name!,
+      password,
+      strength,
+      isPublic: user ? isPublic! : true,
+    };
+
     if (edit) {
-      return window.electron.ipcRenderer.sendMessage('passwd:update', [
-        passwd!.id,
-        {
-          label: name,
-          password,
-          strength: passwordStrength,
-          isPublic: user ? isPublic : true,
-        },
-      ]);
+      return IpcPasswd.updatePasswd(passwd!.id, passwdDto);
     }
 
-    return window.electron.ipcRenderer.sendMessage('passwd:create', [
-      {
-        label: name,
-        password,
-        strength: passwordStrength,
-        isPublic: user ? isPublic : true,
-      },
-      user,
-    ]);
+    IpcPasswd.createPasswd(passwdDto, user ? user.id : undefined);
   };
 
   if (passwd) {
