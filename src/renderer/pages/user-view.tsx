@@ -4,13 +4,13 @@ import Navbar from 'renderer/components/shared/navbar';
 import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
 import { IpcPasswd } from 'renderer/ipc-connector';
 import { Scheduler } from 'renderer/scheduler';
-import { scheduledFunction } from 'renderer/scheduler/notifications';
+import { findNotifyOldPasswords } from 'renderer/scheduler/notifications';
 
 const UserView = () => {
   const navigate = useNavigate();
 
-  const scheduler = new Scheduler(30, () =>
-    scheduledFunction(() => navigate('/user/notifications'))
+  const scheduler = new Scheduler(60, () =>
+    findNotifyOldPasswords(() => navigate('/user/notifications'))
   );
 
   const { user } = useTypedSelector((state) => state.users);
@@ -18,8 +18,14 @@ const UserView = () => {
   useEffect(() => {
     IpcPasswd.findAll(user!.id);
 
+    const timer = setTimeout(
+      () => findNotifyOldPasswords(() => navigate('/user/notifications')),
+      60000 // 1 min
+    );
+
     () => {
       scheduler.stop();
+      clearTimeout(timer);
     };
   }, []);
 

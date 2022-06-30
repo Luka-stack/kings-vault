@@ -1,5 +1,5 @@
 import path from 'path';
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, Menu, shell, Tray } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import { resolveHtmlPath } from './util';
@@ -13,6 +13,7 @@ export default class AppUpdater {
   }
 }
 
+let mainTry: Tray | null = null;
 let mainWindow: BrowserWindow | null = null;
 
 if (process.env.NODE_ENV === 'production') {
@@ -61,7 +62,7 @@ const createWindow = async () => {
     show: false,
     width: 960,
     height: 540,
-    icon: getAssetPath('crown.png'),
+    icon: getAssetPath('crown.ico'),
     resizable: false,
     webPreferences: {
       preload: app.isPackaged
@@ -87,6 +88,19 @@ const createWindow = async () => {
 
   mainWindow.on('closed', () => {
     mainWindow = null;
+  });
+
+  mainWindow.on('minimize', (event: Electron.Event) => {
+    event.preventDefault();
+    mainWindow?.hide();
+    mainTry = createTray(getAssetPath('crown.ico'));
+  });
+
+  mainWindow.on('restore', (event: Electron.Event) => {
+    event.preventDefault();
+    mainWindow?.show();
+    mainTry?.destroy();
+    mainTry = null;
   });
 
   // Open urls in the user's browser
@@ -127,3 +141,34 @@ app
     });
   })
   .catch(console.log);
+
+// TRAY ICON
+
+const createTray = (iconPath: string) => {
+  let appIcon = new Tray(iconPath);
+
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: "Open King's Vault",
+      click: () => {
+        mainWindow?.show();
+      },
+    },
+    { type: 'separator' },
+    {
+      label: 'Exit',
+      click: () => {
+        app.quit();
+      },
+    },
+  ]);
+
+  appIcon.on('double-click', () => {
+    mainWindow?.show();
+  });
+
+  appIcon.setToolTip("King's Vault");
+  appIcon.setContextMenu(contextMenu);
+
+  return appIcon;
+};
