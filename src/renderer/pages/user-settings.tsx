@@ -2,6 +2,7 @@ import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
 import { Link } from 'react-router-dom';
 import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
+import { IpcPasswd } from 'renderer/ipc-connector';
 
 dayjs.extend(relativeTime);
 
@@ -36,7 +37,7 @@ const UserSettings = () => {
         </div>
       </section>
 
-      <section className="flex flex-row mt-12">
+      <section className="flex mt-12">
         <div className="flex flex-col ml-10 text-white">
           <h3 className="mb-4 text-2xl font-medium">Vault</h3>
           <p>
@@ -57,6 +58,14 @@ const UserSettings = () => {
             }
             `}
           </p>
+        </div>
+        <div>
+          <button
+            className="w-48 px-3 py-1 mt-4 text-white rounded-full bg-ksv-blue-500 hover:bg-ksv-blue-700"
+            onClick={() => IpcPasswd.exportPasswd(user.id)}
+          >
+            Export Passwords
+          </button>
         </div>
       </section>
     </div>

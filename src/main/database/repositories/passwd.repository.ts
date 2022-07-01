@@ -43,13 +43,13 @@ export class PasswdRepository {
     });
   }
 
-  findAll(userId?: number): Promise<Passwd[]> {
+  findAll(userId?: number, onlyUsers?: boolean): Promise<Passwd[]> {
     return new Promise<Passwd[]>((resolve, reject) => {
       this.dbconnection.all(
-        PasswdQueries.findAll(userId),
+        PasswdQueries.findAll(userId, onlyUsers),
         function (err: Error | null, rows: any[]) {
           if (err) {
-            reject();
+            reject(err);
           }
 
           resolve(rows);

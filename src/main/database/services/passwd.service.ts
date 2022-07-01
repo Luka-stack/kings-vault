@@ -1,8 +1,8 @@
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 
-import { encrypt } from '../../cipher';
-import { CreatePasswdDto } from '../entities/passwd/passwd';
-import { User } from '../entities/user/user';
+import { exportPasswd } from '../../backuper';
+import { AES256Ecryption } from '../../cipher';
+import { CreatePasswdDto, Passwd } from '../entities/passwd/passwd';
 import { PasswdRepository } from '../repositories/passwd.repository';
 import { UserService } from './user.service';
 
@@ -24,7 +24,7 @@ export class PasswdService {
   }
 
   async create(passwd: CreatePasswdDto, userId: number | null): Promise<void> {
-    const passwordHash = encrypt(passwd.password);
+    const passwordHash = AES256Ecryption(passwd.password);
     const id = userId || UserService.ANONYMOUS_USER.id;
 
     try {
@@ -53,7 +53,7 @@ export class PasswdService {
   }
 
   async update(passwdId: number, passwd: CreatePasswdDto): Promise<void> {
-    const passwordHash = encrypt(passwd.password);
+    const passwordHash = AES256Ecryption(passwd.password);
 
     try {
       await this.repo.update(passwdId, passwd, passwordHash);
@@ -80,6 +80,18 @@ export class PasswdService {
     }
   }
 
+  async passwdDump(userId?: number): Promise<void> {
+    let passwds: Passwd[];
+
+    if (userId) {
+      passwds = await this.repo.findAll(userId, true);
+    } else {
+      passwds = await this.repo.findAll();
+    }
+
+    exportPasswd(passwds);
+  }
+
   startListeners(): void {
     ipcMain.on('passwd:create', (_, args: any[]) => {
       const [passwd, user] = args;
@@ -96,6 +108,10 @@ export class PasswdService {
 
     ipcMain.on('passwd:delete', (_, args: any[]) => {
       this.delete(args[0]);
+    });
+
+    ipcMain.on('passwd:export', (_, args: any[]) => {
+      this.passwdDump(args[0]);
     });
   }
 }

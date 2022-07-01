@@ -45,4 +45,8 @@ export namespace IpcPasswd {
   export const deletePasswd = (passwdId: number) => {
     window.electron.ipcRenderer.sendMessage('passwd:delete', [passwdId]);
   };
+
+  export const exportPasswd = (userId?: number) => {
+    window.electron.ipcRenderer.sendMessage('passwd:export', [userId]);
+  };
 }

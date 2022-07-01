@@ -1,5 +1,5 @@
 import path from 'path';
-import { app, BrowserWindow, Menu, shell, Tray } from 'electron';
+import { app, BrowserWindow, ipcMain, Menu, shell, Tray } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
 import { resolveHtmlPath } from './util';
@@ -13,8 +13,11 @@ export default class AppUpdater {
   }
 }
 
+let database: DatabaseModule | null;
 let mainTry: Tray | null = null;
 let mainWindow: BrowserWindow | null = null;
+
+const sqlFile = 'D:\\Programming\\projects\\king-vault\\.kingsvault.sqlite3';
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -130,9 +133,7 @@ app
   .whenReady()
   .then(() => {
     createWindow().then(() => {
-      const sqlFile =
-        'D:\\Programming\\projects\\king-vault\\.kingsvault.sqlite3';
-      const database = new DatabaseModule(sqlFile, mainWindow!);
+      database = new DatabaseModule(sqlFile, mainWindow!);
     });
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
