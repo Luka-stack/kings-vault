@@ -43,13 +43,32 @@ export class PasswdRepository {
     });
   }
 
-  findAll(userId?: number): Promise<Passwd[]> {
+  createPasswords(passwds: Passwd[], userId: number): Promise<void> {
+    return new Promise<void>((resolve, reject) => {
+      this.dbconnection.run(
+        PasswdQueries.createPasswds(passwds, userId),
+        function (err: Error | null) {
+          if (err) {
+            reject(err);
+          }
+
+          if (this.lastID) {
+            resolve();
+          }
+
+          reject();
+        }
+      );
+    });
+  }
+
+  findAll(userId?: number, onlyUsers?: boolean): Promise<Passwd[]> {
     return new Promise<Passwd[]>((resolve, reject) => {
       this.dbconnection.all(
-        PasswdQueries.findAll(userId),
+        PasswdQueries.findAll(userId, onlyUsers),
         function (err: Error | null, rows: any[]) {
           if (err) {
-            reject();
+            reject(err);
           }
 
           resolve(rows);

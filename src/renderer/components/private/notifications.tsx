@@ -8,9 +8,6 @@ import { IpcUser } from 'renderer/ipc-connector';
 dayjs.extend(relativeTime);
 
 const Notifications = () => {
-  const [daysError, setDaysError] = useState(false);
-  const [checked, setChecked] = useState(false);
-
   const daysRef = useRef<any>();
 
   const { id, notifyStatus, notifyDays } = useTypedSelector(
@@ -21,6 +18,9 @@ const Notifications = () => {
       (passwd) => passwd.userId === state.users.user!.id
     )
   );
+
+  const [daysError, setDaysError] = useState(false);
+  const [checked, setChecked] = useState(notifyStatus == 1);
 
   const onSavePref = () => {
     const daysInput: HTMLInputElement = daysRef.current;

@@ -1,5 +1,5 @@
 import { UserQueries } from '../user/queries';
-import { CreatePasswdDto } from './passwd';
+import { CreatePasswdDto, Passwd } from './passwd';
 
 export const PasswdQueries = {
   table: 'passwds',
@@ -73,28 +73,43 @@ export const PasswdQueries = {
     return `${base} VALUES(${values})`;
   },
 
-  findAll: (userId?: number): string => {
+  createPasswds: (passwds: Passwd[], userId: number): string => {
+    const fields = PasswdQueries.fields
+      .slice(1, PasswdQueries.fields.length - 1)
+      .map((field) => field.name);
+    const base = `INSERT INTO ${PasswdQueries.table} (${fields})`;
+
+    const listOfValues: string[] = [];
+    let values;
+
+    passwds.forEach((passwd) => {
+      values = [];
+      values.push(`'${passwd.label}'`);
+      values.push(`'${passwd.content}'`);
+      values.push(`'${passwd.iv}'`);
+      values.push(`'${passwd.strength}'`);
+      values.push(`'${passwd.modified}'`);
+      values.push(passwd.isPublic ? '1' : '0');
+      values.push(userId + '');
+
+      listOfValues.push(`(${values.join(',')})`);
+    });
+
+    return `${base} VALUES ${listOfValues.join(',')};`;
+  },
+
+  findAll: (userId?: number, onlyUsers?: boolean): string => {
     let where: string;
 
     if (userId) {
-      where = `userId = ${userId} OR passwds.isPublic = 1`;
+      where = `userId = ${userId}${
+        onlyUsers ? '' : ' OR passwds.isPublic = 1'
+      }`;
     } else {
       where = 'passwds.isPublic = 1';
     }
 
-    const passwdFields =
-      'passwds.id, passwds.label, passwds.content, passwds.iv, passwds.strength, passwds.modified, passwds.isPublic';
-    const userFields = 'users.id as userId, users.username';
-
-    return `SELECT ${passwdFields}, ${userFields} FROM ${UserQueries.table} as users INNER JOIN ${PasswdQueries.table} as passwds ON passwds.user_id = users.id WHERE ${where}`;
-  },
-
-  findAllByUserSorted: (userId: number): string => {
-    const passwdFields =
-      'passwds.id, passwds.label, passwds.content, passwds.iv, passwds.strength, passwds.modified, passwds.isPublic';
-    const userFields = 'users.id as userId, users.username';
-
-    return `SELECT ${passwdFields}, ${userFields} FROM ${UserQueries.table} as users INNER JOIN ${PasswdQueries.table} as passwds ON passwds.user_id = users.id WHERE userId = ${userId} ORDER BY passwds.modified ASC`;
+    return findWhere(where);
   },
 
   updatePasswd: (
@@ -110,4 +125,12 @@ export const PasswdQueries = {
   deletePassword: (id: number): string => {
     return `DELETE FROM ${PasswdQueries.table} WHERE id = ${id}`;
   },
+};
+
+const findWhere = (where: string): string => {
+  const passwdFields =
+    'passwds.id, passwds.label, passwds.content, passwds.iv, passwds.strength, passwds.modified, passwds.isPublic';
+  const userFields = 'users.id as userId, users.username';
+
+  return `SELECT ${passwdFields}, ${userFields} FROM ${UserQueries.table} as users INNER JOIN ${PasswdQueries.table} as passwds ON passwds.user_id = users.id WHERE ${where}`;
 };

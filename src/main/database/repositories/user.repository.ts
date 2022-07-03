@@ -97,10 +97,10 @@ export class UserRepository {
     });
   }
 
-  findByCredentials(username: string, password: string): Promise<User> {
+  findByUsername(username: string): Promise<User> {
     return new Promise<User>((resolve, reject) => {
       this.dbconnection.get(
-        UserQueries.findByCredentials(username, password),
+        UserQueries.findByUsername(username),
         function (err: Error | null, row: User) {
           if (err) {
             reject(err);

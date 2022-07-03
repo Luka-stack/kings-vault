@@ -61,8 +61,8 @@ export const UserQueries = {
     return `SELECT * FROM ${UserQueries.table} WHERE id = ${id}`;
   },
 
-  findByCredentials: (username: string, password: string): string => {
-    return `SELECT * FROM ${UserQueries.table} WHERE username = '${username}' AND password = '${password}'`;
+  findByUsername: (username: string): string => {
+    return `SELECT * FROM ${UserQueries.table} WHERE username = '${username}'`;
   },
 
   updateUser: (user: CreateUserDto): string => {

@@ -1,5 +1,5 @@
 import { store } from '../state';
-import Icon from '../../img/crown2.png';
+import Icon from '../../img/crown.png';
 
 export const showNotification = (
   title: string,
@@ -16,7 +16,7 @@ export const showNotification = (
   if (onClose) notification.onclick = onClose;
 };
 
-export const scheduledFunction = (onClick: () => void) => {
+export const findNotifyOldPasswords = (onClick: () => void) => {
   const user = store.getState().users.user;
   const passwds = store.getState().passwds.passwds;
 

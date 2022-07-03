@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer, IpcRendererEvent } from 'electron';
 
-import { decrypt } from './cipher';
+import { AES256Decryption } from './cipher';
 
 export type Channels =
   | 'user:create'
@@ -11,7 +11,9 @@ export type Channels =
   | 'passwd:update'
   | 'passwd:delete'
   | 'passwd:findAll'
-  | 'passwd:findAllByModified';
+  | 'passwd:export'
+  | 'passwd:import'
+  | 'control:restore';
 
 contextBridge.exposeInMainWorld('electron', {
   ipcRenderer: {
@@ -37,5 +39,5 @@ contextBridge.exposeInMainWorld('electron', {
 });
 
 contextBridge.exposeInMainWorld('cipher', {
-  decrypt: decrypt,
+  decrypt: AES256Decryption,
 });

@@ -1,13 +1,18 @@
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import ExportModal from 'renderer/components/modals/export-modal';
+import ImportModal from 'renderer/components/modals/import-modal';
 import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
 
 dayjs.extend(relativeTime);
 
 const UserSettings = () => {
+  const [importModal, setImportModal] = useState(false);
+  const [exportModal, setExportModal] = useState(false);
+
   const user = useTypedSelector((state) => state.users.user!);
-  const passwd = useTypedSelector((state) => state.passwds.passwds);
 
   return (
     <div className="w-full p-4 mt-10">
@@ -17,7 +22,7 @@ const UserSettings = () => {
           <p>{user.username.toUpperCase().slice(0, 1)}</p>
         </div>
         <div className="ml-10 text-white">
-          <h3 className="mb-4 text-xl font-medium">Password</h3>
+          <h3 className="mb-4 text-lg font-medium leading-3">Password</h3>
           <p className="mb-1">
             Last Modified: {dayjs(user.modified).fromNow()}
           </p>
@@ -36,29 +41,30 @@ const UserSettings = () => {
         </div>
       </section>
 
-      <section className="flex flex-row mt-12">
-        <div className="flex flex-col ml-10 text-white">
-          <h3 className="mb-4 text-2xl font-medium">Vault</h3>
-          <p>
-            {`Private passwords: 
-            ${
-              passwd.filter(
-                (passwd) =>
-                  passwd.isPublic == false && passwd.userId === user.id
-              ).length
-            }`}
-          </p>
-          <p className="mt-6">
-            {`Public password: 
-            ${
-              passwd.filter(
-                (passwd) => passwd.isPublic == true && passwd.userId === user.id
-              ).length
-            }
-            `}
-          </p>
-        </div>
+      <section className="flex flex-col mt-20 ml-10">
+        <h3 className="mb-4 text-lg font-medium leading-3 text-white">
+          Backups
+        </h3>
+        <button
+          className="w-48 px-3 py-1 mt-4 text-sm text-white rounded-full bg-ksv-blue-500/50 hover:bg-ksv-blue-700"
+          onClick={() => setExportModal(true)}
+        >
+          Export Passwords
+        </button>
+        <button
+          className="w-48 px-3 py-1 mt-4 text-sm text-white rounded-full bg-ksv-blue-500/50 hover:bg-ksv-blue-700"
+          onClick={() => setImportModal(true)}
+        >
+          Import Passwords
+        </button>
       </section>
+
+      {importModal && (
+        <ImportModal onClose={() => setImportModal(false)} userId={user.id} />
+      )}
+      {exportModal && (
+        <ExportModal onClose={() => setExportModal(false)} userId={user.id} />
+      )}
     </div>
   );
 };

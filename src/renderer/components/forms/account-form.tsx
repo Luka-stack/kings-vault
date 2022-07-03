@@ -79,7 +79,7 @@ const AccountForm = () => {
           <div className="mt-6">
             <button
               disabled={disabled}
-              className="h-8 p-1 text-sm font-medium text-white rounded-full w-72 bg-ksv-gray-500 hover:bg-ksv-gray-300"
+              className="h-8 p-1 text-sm font-medium text-white rounded-full w-72 bg-ksv-gray-500 hover:bg-ksv-gray-300 disabled:bg-gray-400"
             >
               Log In
             </button>
@@ -90,7 +90,7 @@ const AccountForm = () => {
           <button
             onClick={() => createUser(username, password)}
             disabled={disabled}
-            className="h-8 p-1 text-sm font-medium text-white rounded-full w-72 bg-ksv-blue-500 hover:bg-ksv-blue-700"
+            className="h-8 p-1 text-sm font-medium text-white rounded-full w-72 bg-ksv-blue-500 hover:bg-ksv-blue-700 disabled:bg-gray-400"
           >
             Create Account
           </button>

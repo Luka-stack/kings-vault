@@ -1,9 +1,9 @@
 import path from 'path';
-import { app, BrowserWindow, shell } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
-import { resolveHtmlPath } from './util';
 import { DatabaseModule } from './database/database.module';
+import { MainWindow } from './main-window';
 
 export default class AppUpdater {
   constructor() {
@@ -13,7 +13,10 @@ export default class AppUpdater {
   }
 }
 
+let database: DatabaseModule | null;
 let mainWindow: BrowserWindow | null = null;
+
+const sqlFile = path.join(app.getPath('userData'), '.kingsvault.sqlite3');
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -57,48 +60,16 @@ const createWindow = async () => {
     return path.join(RESOURCES_PATH, ...paths);
   };
 
-  mainWindow = new BrowserWindow({
-    show: false,
-    width: 960,
-    height: 540,
-    icon: getAssetPath('crown.png'),
-    resizable: false,
-    webPreferences: {
-      preload: app.isPackaged
-        ? path.join(__dirname, 'preload.js')
-        : path.join(__dirname, '../../.erb/dll/preload.js'),
-    },
-  });
-
-  mainWindow.removeMenu();
-
-  mainWindow.loadURL(resolveHtmlPath('index.html'));
-
-  mainWindow.on('ready-to-show', () => {
-    if (!mainWindow) {
-      throw new Error('"mainWindow" is not defined');
-    }
-    if (process.env.START_MINIMIZED) {
-      mainWindow.minimize();
-    } else {
-      mainWindow.show();
-    }
-  });
-
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-  });
-
-  // Open urls in the user's browser
-  mainWindow.webContents.setWindowOpenHandler((edata) => {
-    shell.openExternal(edata.url);
-    return { action: 'deny' };
-  });
+  mainWindow = new MainWindow(getAssetPath('crown.ico'));
 
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
   new AppUpdater();
 };
+
+ipcMain.on('control:restore', (_event, _args: any[]) => {
+  mainWindow?.restore();
+});
 
 /**
  * Add event listeners...
@@ -116,9 +87,7 @@ app
   .whenReady()
   .then(() => {
     createWindow().then(() => {
-      const sqlFile =
-        'D:\\Programming\\projects\\king-vault\\.kingsvault.sqlite3';
-      const database = new DatabaseModule(sqlFile, mainWindow!);
+      database = new DatabaseModule(sqlFile, mainWindow!);
     });
     app.on('activate', () => {
       // On macOS it's common to re-create a window in the app when the
