@@ -1,6 +1,6 @@
 {
   "name": "kings-vault",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "A password manager",
   "main": "./dist/main/main.js",
   "author": {
@@ -14,6 +14,7 @@
     "postinstall": "npm run electron-rebuild && npm run link-modules"
   },
   "dependencies": {
+    "bcrypt": "^5.0.1",
     "sqlite3": "^5.0.8"
   },
   "license": "MIT"

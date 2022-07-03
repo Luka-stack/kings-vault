@@ -1,4 +1,5 @@
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
+import bcrypt from 'bcrypt';
 
 import { createHash } from '../../cipher';
 import { CreateUserDto } from '../entities/user/user';
@@ -32,7 +33,7 @@ export class UserService {
   }
 
   async create(user: CreateUserDto): Promise<void> {
-    const passwordHash = createHash(user.password);
+    const passwordHash = await bcrypt.hash(user.password, 7);
     user.password = passwordHash;
 
     try {
@@ -49,16 +50,27 @@ export class UserService {
   }
 
   async logIn(username: string, password: string): Promise<void> {
-    const passwordHash = createHash(password);
-
     try {
-      const result = await this.repo.findByCredentials(username, passwordHash);
+      const result = await this.repo.findByUsername(username);
 
-      if (result) {
-        return this.window.webContents.send('user:logIn', 'success', result);
+      if (!result) {
+        return this.window.webContents.send(
+          'user:logIn',
+          'error',
+          'Wrong credentials'
+        );
       }
 
-      this.window.webContents.send('user:logIn', 'error', 'Wrong credentials');
+      const correctPassword = await bcrypt.compare(password, result.password);
+      if (!correctPassword) {
+        return this.window.webContents.send(
+          'user:logIn',
+          'error',
+          'Wrong credentials'
+        );
+      }
+
+      return this.window.webContents.send('user:logIn', 'success', result);
     } catch (err) {
       this.window.webContents.send(
         'user:logIn',
@@ -74,10 +86,7 @@ export class UserService {
 
     try {
       await this.repo.update(user);
-      const result = await this.repo.findByCredentials(
-        user.username,
-        user.password
-      );
+      const result = await this.repo.findByUsername(user.username);
 
       this.window.webContents.send('user:userUpdate', 'success', result);
     } catch (err) {

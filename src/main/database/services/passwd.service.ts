@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 
-import { exportPasswd } from '../../backuper';
+import { exportPasswds, importPasswds } from '../../backuper';
 import { AES256Ecryption } from '../../cipher';
 import { CreatePasswdDto, Passwd } from '../entities/passwd/passwd';
 import { PasswdRepository } from '../repositories/passwd.repository';
@@ -80,7 +80,7 @@ export class PasswdService {
     }
   }
 
-  async passwdDump(userId?: number): Promise<void> {
+  async exportPasswds(path: string, userId?: number): Promise<void> {
     let passwds: Passwd[];
 
     if (userId) {
@@ -89,7 +89,52 @@ export class PasswdService {
       passwds = await this.repo.findAll();
     }
 
-    exportPasswd(passwds);
+    try {
+      await exportPasswds(path, passwds);
+      this.window.webContents.send(
+        'passwd:saved',
+        'success',
+        'Successfully exported passwords'
+      );
+    } catch (err) {
+      this.window.webContents.send(
+        'passwd:saved',
+        'error',
+        'Error occurred while importing passwords'
+      );
+    }
+  }
+
+  async importPasswds(filePath: string, userId?: number): Promise<void> {
+    const actualUserId = userId || UserService.ANONYMOUS_USER.id;
+    let passwds: Passwd[];
+
+    try {
+      passwds = await importPasswds(filePath);
+    } catch (err) {
+      return this.window.webContents.send(
+        'passwd:saved',
+        'error',
+        "Couldn't import passwords. Corrupted file"
+      );
+    }
+
+    try {
+      await this.repo.createPasswords(passwds, actualUserId);
+      this.findAll(userId);
+
+      this.window.webContents.send(
+        'passwd:saved',
+        'success',
+        'Successfully imported passwords'
+      );
+    } catch (err) {
+      this.window.webContents.send(
+        'passwd:saved',
+        'error',
+        'Error occurred while importing passwords'
+      );
+    }
   }
 
   startListeners(): void {
@@ -111,7 +156,11 @@ export class PasswdService {
     });
 
     ipcMain.on('passwd:export', (_, args: any[]) => {
-      this.passwdDump(args[0]);
+      this.exportPasswds(args[0], args[1]);
+    });
+
+    ipcMain.on('passwd:import', (_, args: any[]) => {
+      this.importPasswds(args[0], args[1]);
     });
   }
 }

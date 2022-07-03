@@ -1,6 +1,6 @@
 {
   "name": "kings-vault",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "scripts": {
     "build": "concurrently \"npm run build:main\" \"npm run build:renderer\"",
     "build:main": "cross-env NODE_ENV=production TS_NODE_TRANSPILE_ONLY=true webpack --config ./.erb/configs/webpack.config.main.prod.ts",
@@ -69,7 +69,7 @@
       ]
     },
     "win": {
-      "icon": "/assets/crown.ico",
+      "icon": "/assets/crown-big.ico",
       "target": [
         "nsis"
       ]
@@ -132,6 +132,7 @@
     "@teamsupercell/typings-for-css-modules-loader": "^2.5.1",
     "@testing-library/jest-dom": "^5.16.4",
     "@testing-library/react": "^13.0.0",
+    "@types/bcrypt": "^5.0.0",
     "@types/jest": "^27.4.1",
     "@types/node": "17.0.23",
     "@types/react": "^17.0.43",
@@ -182,6 +183,7 @@
     "postcss-loader": "^6.2.1",
     "prettier": "^2.6.2",
     "react-confirm-alert": "^3.0.2",
+    "react-draggable": "^4.4.5",
     "react-redux": "^8.0.1",
     "react-refresh": "^0.12.0",
     "react-refresh-typescript": "^2.0.4",

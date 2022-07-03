@@ -1,5 +1,5 @@
 import { UserQueries } from '../user/queries';
-import { CreatePasswdDto } from './passwd';
+import { CreatePasswdDto, Passwd } from './passwd';
 
 export const PasswdQueries = {
   table: 'passwds',
@@ -71,6 +71,31 @@ export const PasswdQueries = {
     values.push(userId + '');
 
     return `${base} VALUES(${values})`;
+  },
+
+  createPasswds: (passwds: Passwd[], userId: number): string => {
+    const fields = PasswdQueries.fields
+      .slice(1, PasswdQueries.fields.length - 1)
+      .map((field) => field.name);
+    const base = `INSERT INTO ${PasswdQueries.table} (${fields})`;
+
+    const listOfValues: string[] = [];
+    let values;
+
+    passwds.forEach((passwd) => {
+      values = [];
+      values.push(`'${passwd.label}'`);
+      values.push(`'${passwd.content}'`);
+      values.push(`'${passwd.iv}'`);
+      values.push(`'${passwd.strength}'`);
+      values.push(`'${passwd.modified}'`);
+      values.push(passwd.isPublic ? '1' : '0');
+      values.push(userId + '');
+
+      listOfValues.push(`(${values.join(',')})`);
+    });
+
+    return `${base} VALUES ${listOfValues.join(',')};`;
   },
 
   findAll: (userId?: number, onlyUsers?: boolean): string => {

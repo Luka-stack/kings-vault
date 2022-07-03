@@ -1,5 +1,11 @@
 import { CreatePasswdDto, CreateUserDto } from './state';
 
+export namespace IpcControl {
+  export const restoreWindow = () => {
+    window.electron.ipcRenderer.sendMessage('control:restore', []);
+  };
+}
+
 export namespace IpcUser {
   export const createUser = (user: CreateUserDto) => {
     window.electron.ipcRenderer.sendMessage('user:create', [user]);
@@ -46,7 +52,11 @@ export namespace IpcPasswd {
     window.electron.ipcRenderer.sendMessage('passwd:delete', [passwdId]);
   };
 
-  export const exportPasswd = (userId?: number) => {
-    window.electron.ipcRenderer.sendMessage('passwd:export', [userId]);
+  export const exportPasswds = (path: string, userId?: number) => {
+    window.electron.ipcRenderer.sendMessage('passwd:export', [path, userId]);
+  };
+
+  export const importPasswds = (file: string, userId?: number) => {
+    window.electron.ipcRenderer.sendMessage('passwd:import', [file, userId]);
   };
 }

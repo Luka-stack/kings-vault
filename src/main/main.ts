@@ -1,9 +1,9 @@
 import path from 'path';
-import { app, BrowserWindow, ipcMain, Menu, shell, Tray } from 'electron';
+import { app, BrowserWindow, ipcMain } from 'electron';
 import { autoUpdater } from 'electron-updater';
 import log from 'electron-log';
-import { resolveHtmlPath } from './util';
 import { DatabaseModule } from './database/database.module';
+import { MainWindow } from './main-window';
 
 export default class AppUpdater {
   constructor() {
@@ -14,10 +14,9 @@ export default class AppUpdater {
 }
 
 let database: DatabaseModule | null;
-let mainTry: Tray | null = null;
 let mainWindow: BrowserWindow | null = null;
 
-const sqlFile = 'D:\\Programming\\projects\\king-vault\\.kingsvault.sqlite3';
+const sqlFile = path.join(app.getPath('userData'), '.kingsvault.sqlite3');
 
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
@@ -61,61 +60,16 @@ const createWindow = async () => {
     return path.join(RESOURCES_PATH, ...paths);
   };
 
-  mainWindow = new BrowserWindow({
-    show: false,
-    width: 960,
-    height: 540,
-    icon: getAssetPath('crown.ico'),
-    resizable: false,
-    webPreferences: {
-      preload: app.isPackaged
-        ? path.join(__dirname, 'preload.js')
-        : path.join(__dirname, '../../.erb/dll/preload.js'),
-    },
-  });
-
-  mainWindow.removeMenu();
-
-  mainWindow.loadURL(resolveHtmlPath('index.html'));
-
-  mainWindow.on('ready-to-show', () => {
-    if (!mainWindow) {
-      throw new Error('"mainWindow" is not defined');
-    }
-    if (process.env.START_MINIMIZED) {
-      mainWindow.minimize();
-    } else {
-      mainWindow.show();
-    }
-  });
-
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-  });
-
-  mainWindow.on('minimize', (event: Electron.Event) => {
-    event.preventDefault();
-    mainWindow?.hide();
-    mainTry = createTray(getAssetPath('crown.ico'));
-  });
-
-  mainWindow.on('restore', (event: Electron.Event) => {
-    event.preventDefault();
-    mainWindow?.show();
-    mainTry?.destroy();
-    mainTry = null;
-  });
-
-  // Open urls in the user's browser
-  mainWindow.webContents.setWindowOpenHandler((edata) => {
-    shell.openExternal(edata.url);
-    return { action: 'deny' };
-  });
+  mainWindow = new MainWindow(getAssetPath('crown.ico'));
 
   // Remove this if your app does not use auto updates
   // eslint-disable-next-line
   new AppUpdater();
 };
+
+ipcMain.on('control:restore', (_event, _args: any[]) => {
+  mainWindow?.restore();
+});
 
 /**
  * Add event listeners...
@@ -142,34 +96,3 @@ app
     });
   })
   .catch(console.log);
-
-// TRAY ICON
-
-const createTray = (iconPath: string) => {
-  let appIcon = new Tray(iconPath);
-
-  const contextMenu = Menu.buildFromTemplate([
-    {
-      label: "Open King's Vault",
-      click: () => {
-        mainWindow?.show();
-      },
-    },
-    { type: 'separator' },
-    {
-      label: 'Exit',
-      click: () => {
-        app.quit();
-      },
-    },
-  ]);
-
-  appIcon.on('double-click', () => {
-    mainWindow?.show();
-  });
-
-  appIcon.setToolTip("King's Vault");
-  appIcon.setContextMenu(contextMenu);
-
-  return appIcon;
-};

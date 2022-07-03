@@ -17,7 +17,6 @@ import {
   setLength,
 } from 'renderer/passwds-utilities';
 import { generatePassword } from 'renderer/passwds-utilities/generator';
-const zxcvbn = require('zxcvbn');
 
 interface PasswordSetting {
   id: number;

@@ -11,7 +11,9 @@ export type Channels =
   | 'passwd:update'
   | 'passwd:delete'
   | 'passwd:findAll'
-  | 'passwd:export';
+  | 'passwd:export'
+  | 'passwd:import'
+  | 'control:restore';
 
 contextBridge.exposeInMainWorld('electron', {
   ipcRenderer: {
