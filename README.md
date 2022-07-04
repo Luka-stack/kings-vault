@@ -1,46 +1,97 @@
-# Getting Started with Create React App
+<h1 align="center" style="text-align:center;">
+    <img src="./assets/crown.ico" alt="kings-vault-logo" />
+    <br />
+    King's Vault
+</h1>
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+<p align="center">
+  <b>The Only Password Manager and Password Generator that You Need</b>
+  <br>
+  <sub>Made with ❤️ by <a href="https://github.com/Luka-stack">Lukasz Rafa (Luka-stack)</a></sub>
+</p>
 
-## Available Scripts
+<br />
 
-In the project directory, you can run:
+# ❯ Table of contents
 
-### `npm start`
+- [Introduction](#-introduction)
+- [Installation](#-installation)
+- [Get the app](#-get-the-app)
+- [Extending](#-extending)
+- [Password Generator](#-password-generator)
+- [Electron React Boilerplate](#-electron-react-boilerplate)
+- [Bugs](#-bugs)
+- [License](#-license)
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+# ❯ Introduction
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+The <b>King's Vault</b> is a password manager app. <b>Kings's Vault</b> allows its users to create an account and store their passwords. It is equipped with a system to generate passwords and rank them based on the time needed to crack them (it takes the rainbow table under consideration). Additionally, it can track password age and inform the user which ones should be updated. <b>King's Vault</b> is intended to use for multiple users. Every account has its own private passwords but users can create public passwords that are visible to everyone but can be edited only by the creator. Public passwords are visible on the landing page and on one of the pages in the user's view.
 
-### `npm test`
+# ❯ Installation
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## GitHub project
 
-### `npm run build`
+You can download project directly from this github page. After downloading (and unziping) the only thing you need to do are:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+1. install required modules
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```bash
+npm install
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+2. package project
 
-### `npm run eject`
+```bash
+npm run package
+```
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+After some time, finished product will be in <i>realse\build</i> folder.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+# ❯ Get the app
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+The app is available: [`kingsvault-win64-v.2.0.0.zip`](https://github.com/Luka-stack/kings-vault/releases/download/Latest/kingsvault-win64-v.2.0.0.zip)
+<br/>
+<sub>SHA-256: `29f14ccd54868f7933b2c26b8af9a7da4282d6d33505828e9f240bd52e71c714`</sub>
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+# ❯ Extending
 
-## Learn More
+I'm strongly encouraged you to download, add new features and customize this project however you want.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+## Running
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+To run project simple type:
+
+```bash
+npm start
+```
+
+It starts electron and its servs react frontend.
+
+## Backend
+
+All of backend code sits in <i>src/main</i> folder.
+
+## Frontend
+
+Frontend is fully created with react. All of the frontend code is available under <i>src/rendered</i> folder.
+
+## Adding Dependencies
+
+All of the dependencies are divided so called native modules (related to backend) and the rest (mainly frontend modules or types):
+
+1. Native Modules are described as node dependencies that are written in C++, C or Rust ([Read more in ERB Docs](https://electron-react-boilerplate.js.org/docs/native-modules)) are added to package.json in <i>release\app</i> folder.
+2. All of the other dependencies (react deps, types etc.) are added to package.json in main project folder as dev dependencies ([Read more in ERB Docs](https://electron-react-boilerplate.js.org/docs/adding-dependencies))
+
+# ❯ Electron React Boilerplate
+
+This project is based on Fundation prepared and maintain by [Electron React Boilerplate](https://electron-react-boilerplate.js.org/) group.
+
+The whole project can be found here [ERB GitHub](https://github.com/electron-react-boilerplate/electron-react-boilerplate)
+
+# ❯ Bugs
+
+## [Issues](https://github.com/Luka-stack/kings-vault/issues)
+
+# ❯ License
+
+## [MIT](LICENSE)
