@@ -18,7 +18,6 @@
 - [Installation](#-installation)
 - [Get the app](#-get-the-app)
 - [Extending](#-extending)
-- [Password Generator](#-password-generator)
 - [Electron React Boilerplate](#-electron-react-boilerplate)
 - [Bugs](#-bugs)
 - [License](#-license)
