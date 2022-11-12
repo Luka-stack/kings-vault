@@ -125,8 +125,6 @@ export type PasswordStrength =
 export const rankPassword = (password: string): PasswordStrength => {
   const score = zxcvbn(password).score;
 
-  console.log(score);
-
   switch (score) {
     case 0:
       return 'very-weak';

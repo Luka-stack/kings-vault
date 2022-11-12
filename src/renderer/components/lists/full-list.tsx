@@ -4,7 +4,8 @@ import { confirmAlert } from 'react-confirm-alert';
 import {
   faArrowDown,
   faArrowUp,
-  faCopy,
+  faIdBadge,
+  faKey,
   faMagnifyingGlass,
   faPen,
   faTag,
@@ -18,7 +19,6 @@ import { Link } from 'react-router-dom';
 import DropDown from '../shared/dropdown';
 import ConfirmationModal from '../shared/confirmation-modal';
 import { Passwd } from 'renderer/state';
-import PasswordTag from '../shared/password-tag';
 import {
   MODIFIED_OPTIONS,
   orderPasswds,
@@ -163,10 +163,12 @@ const FullList: React.FC<Props> = ({ passwds, isPublic }) => {
     return queryPassds.map((passwd) => (
       <Fragment key={passwd.id}>
         <div className="ksv--pwd-item">
-          <div className="flex justify-between">
+          <div className="flex justify-between mb-2">
             <div>
               <h3 className="flex font-medium text-white">{passwd.label}</h3>
-              <PasswordTag content={passwd.content} iv={passwd.iv} />
+              <h5 className="text-sm font-normal text-white/70">
+                {passwd.login}
+              </h5>
             </div>
 
             <div className="flex flex-row">
@@ -194,6 +196,19 @@ const FullList: React.FC<Props> = ({ passwds, isPublic }) => {
               </div>
 
               <Tooltip
+                id={passwd.id + '-login-copy'}
+                position="top right"
+                text="Copy login"
+              >
+                <i
+                  className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2"
+                  onClick={() => navigator.clipboard.writeText(passwd.login)}
+                >
+                  <FontAwesomeIcon icon={faIdBadge} color={'white'} />
+                </i>
+              </Tooltip>
+
+              <Tooltip
                 id={passwd.id + '-copy'}
                 position="top right"
                 text="Copy password"
@@ -202,7 +217,7 @@ const FullList: React.FC<Props> = ({ passwds, isPublic }) => {
                   className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2"
                   onClick={() => copyPassword(passwd.iv, passwd.content)}
                 >
-                  <FontAwesomeIcon icon={faCopy} color={'white'} />
+                  <FontAwesomeIcon icon={faKey} color={'white'} />
                 </i>
               </Tooltip>
 
@@ -236,7 +251,7 @@ const FullList: React.FC<Props> = ({ passwds, isPublic }) => {
         {isPublic && (
           <Tooltip text="Search by Username" position="top center">
             <i
-              className={`flex items-center h-8 p-2 ml-6 border-transparent rounded-lg cursor-pointer active:border-b-2 ${
+              className={`flex items-center h-8 p-2 ml-2 border-transparent rounded-lg cursor-pointer active:border-b-2 ${
                 userQuery && 'bg-ksv-black'
               }`}
               onClick={() => onUserQueryClick(!userQuery)}

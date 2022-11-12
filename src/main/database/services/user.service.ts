@@ -1,7 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import bcrypt from 'bcrypt';
 
-import { createHash } from '../../cipher';
 import { CreateUserDto } from '../entities/user/user';
 import { UserRepository } from '../repositories/user.repository';
 
@@ -81,8 +80,7 @@ export class UserService {
   }
 
   async update(user: CreateUserDto): Promise<void> {
-    const passwordHash = createHash(user.password);
-    user.password = passwordHash;
+    user.password = await bcrypt.hash(user.password, 6);
 
     try {
       await this.repo.update(user);

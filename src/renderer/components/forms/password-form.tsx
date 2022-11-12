@@ -64,6 +64,7 @@ interface Props {
   title: string;
   type: 'account' | 'password';
   name?: string;
+  login?: string;
   password?: string;
   isPublic?: boolean;
   isPublicAvailable?: boolean;
@@ -71,6 +72,7 @@ interface Props {
     password: string,
     passwordStrength: PasswordStrength,
     name?: string,
+    login?: string,
     isPublic?: boolean
   ) => void;
 }
@@ -79,12 +81,14 @@ const PasswordForm: React.FC<Props> = ({
   title,
   type,
   name = '',
+  login = '',
   password = '',
   isPublic = false,
   isPublicAvailable = false,
   onSubmit,
 }) => {
-  const [nameInput, setNateInput] = useState(name);
+  const [nameInput, setNameInput] = useState(name);
+  const [loginInput, setLoginInput] = useState(login);
   const [passwordInput, setPasswordInput] = useState(password);
   const [confirmPassword, setConfirmPassword] = useState('');
   const [hidePassword, setHidePassword] = useState(true);
@@ -107,7 +111,8 @@ const PasswordForm: React.FC<Props> = ({
     if (
       nameInput.trim().length === 0 ||
       passwordInput.trim().length === 0 ||
-      confirmPassword.trim().length === 0
+      confirmPassword.trim().length === 0 ||
+      (loginInput.trim().length === 0 && type === 'password')
     ) {
       return setFormError('All fields must be filled');
     }
@@ -116,7 +121,13 @@ const PasswordForm: React.FC<Props> = ({
       return setFormError('Password are not the same');
     }
 
-    onSubmit(passwordInput, passwordStrength, nameInput, publicPassword);
+    onSubmit(
+      passwordInput,
+      passwordStrength,
+      nameInput,
+      loginInput,
+      publicPassword
+    );
     navigate(-1);
   };
 
@@ -292,7 +303,7 @@ const PasswordForm: React.FC<Props> = ({
                 className="h-8 py-1 pl-2 text-sm font-medium border-none rounded-lg pr-7 w-72 text-ksv-light-gray bg-ksv-black bg-none focus:outline-none focus:ring-1 focus:ring-black placeholder:text-ksv-light-gray placeholder:text-sm"
                 type={'text'}
                 value={nameInput}
-                onChange={(e) => setNateInput(e.target.value)}
+                onChange={(e) => setNameInput(e.target.value)}
                 placeholder="Label"
                 disabled={type === 'account'}
               />
@@ -303,6 +314,19 @@ const PasswordForm: React.FC<Props> = ({
                 />
               </i>
             </div>
+
+            {type === 'password' ? (
+              <div className="relative flex mt-6">
+                <input
+                  className="h-8 py-1 pl-2 pr-8 text-sm font-medium border-none rounded-lg w-72 text-ksv-light-gray bg-ksv-black bg-none focus:outline-none focus:ring-1 focus:ring-black placeholder:text-ksv-light-gray placeholder:text-sm"
+                  type={'text'}
+                  value={loginInput}
+                  onChange={(e) => setLoginInput(e.target.value)}
+                  placeholder="Login / Username"
+                />
+              </div>
+            ) : null}
+
             <div className="relative flex mt-6">
               <input
                 className="h-8 py-1 pl-2 pr-8 text-sm font-medium border-none rounded-lg w-72 text-ksv-light-gray bg-ksv-black bg-none focus:outline-none focus:ring-1 focus:ring-black placeholder:text-ksv-light-gray placeholder:text-sm"
