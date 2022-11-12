@@ -48,9 +48,9 @@ After some time, finished product will be in <i>realse\build</i> folder.
 
 # ❯ Get the app
 
-The app is available: [`kingsvault-win64-v.2.0.0.zip`](https://github.com/Luka-stack/kings-vault/releases/download/Latest/kingsvault-win64-v.2.0.0.zip)
+The app is available: [`kingsvault-win64-v.3.0.0.zip`](https://github.com/Luka-stack/kings-vault/releases/download/v.3.0.0/kingsvault-win64-v.3.0.0.zip)
 <br/>
-<sub>SHA-256: `29f14ccd54868f7933b2c26b8af9a7da4282d6d33505828e9f240bd52e71c714`</sub>
+<sub>SHA-512: `fK2c1Jtl8ocW6uhoKhvxqPsFBsBefQv5zVV46fKYEVT4nCQ9h+6sNfc2w05hNmVfaXbHRaPNcMkRG8LBSSyzA==`</sub>
 
 # ❯ Extending
 
