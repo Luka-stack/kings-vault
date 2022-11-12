@@ -1,5 +1,6 @@
 import {
-  faCopy,
+  faIdBadge,
+  faKey,
   faMagnifyingGlass,
   faPen,
   faTag,
@@ -14,7 +15,6 @@ import { useTypedSelector } from 'renderer/hooks/use-typed-selector';
 import { IpcPasswd } from 'renderer/ipc-connector';
 import { Passwd } from 'renderer/state';
 import ConfirmationModal from '../shared/confirmation-modal';
-import PasswordTag from '../shared/password-tag';
 import Tooltip from '../shared/tooltip';
 
 const PartialList = () => {
@@ -101,13 +101,28 @@ const PartialList = () => {
     return queryPassds.map((passwd) => (
       <Fragment key={passwd.id}>
         <div className="ksv--pwd-item">
-          <div className="flex justify-between">
+          <div className="flex justify-between mb-2">
             <div>
               <h3 className="flex font-medium text-white">{passwd.label}</h3>
-              <PasswordTag content={passwd.content} iv={passwd.iv} />
+              <h5 className="text-sm font-normal text-white/70">
+                {passwd.login}
+              </h5>
             </div>
 
             <div className="flex flex-row">
+              <Tooltip
+                id={passwd.id + '-login-copy'}
+                position="top right"
+                text="Copy login"
+              >
+                <i
+                  className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2"
+                  onClick={() => navigator.clipboard.writeText(passwd.login)}
+                >
+                  <FontAwesomeIcon icon={faIdBadge} color={'white'} />
+                </i>
+              </Tooltip>
+
               <Tooltip
                 id={passwd.id + '-copy'}
                 position="top right"
@@ -117,7 +132,7 @@ const PartialList = () => {
                   className="flex items-center h-8 p-2 mt-2 border-transparent rounded-lg cursor-pointer hover:bg-ksv-gray-700 active:border-b-2"
                   onClick={() => copyPassword(passwd.iv, passwd.content)}
                 >
-                  <FontAwesomeIcon icon={faCopy} color={'white'} />
+                  <FontAwesomeIcon icon={faKey} color={'white'} />
                 </i>
               </Tooltip>
 

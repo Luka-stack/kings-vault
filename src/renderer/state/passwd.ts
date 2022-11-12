@@ -10,6 +10,9 @@ export interface Passwd {
   // user fields
   username: string;
   userId: number;
+
+  // password fields
+  login: string;
 }
 
 export interface CreatePasswdDto {

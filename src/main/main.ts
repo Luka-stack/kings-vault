@@ -16,8 +16,6 @@ export default class AppUpdater {
 let database: DatabaseModule | null;
 let mainWindow: BrowserWindow | null = null;
 
-const sqlFile = path.join(app.getPath('userData'), '.kingsvault.sqlite3');
-
 if (process.env.NODE_ENV === 'production') {
   const sourceMapSupport = require('source-map-support');
   sourceMapSupport.install();
@@ -29,6 +27,10 @@ if (process.platform === 'win32') {
 
 const isDebug =
   process.env.NODE_ENV === 'development' || process.env.DEBUG_PROD === 'true';
+
+const sqlFile = isDebug
+  ? '.kingsvault.sqlite3'
+  : path.join(app.getPath('userData'), '.kingsvault.sqlite3');
 
 if (isDebug) {
   require('electron-debug')();

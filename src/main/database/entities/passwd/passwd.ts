@@ -1,6 +1,7 @@
 export interface Passwd {
   id: number;
   label: string;
+  login: string;
   content: string;
   iv: string;
   strength: string;
@@ -12,6 +13,7 @@ export interface Passwd {
 
 export interface CreatePasswdDto {
   label: string;
+  login: string;
   password: string;
   strength: string;
   isPublic: boolean;

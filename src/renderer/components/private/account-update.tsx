@@ -7,6 +7,8 @@ const AccountUpdate = () => {
   const user = useTypedSelector((state) => state.users.user);
 
   const onSubmit = (password: string, passwordStrength: PasswordStrength) => {
+    console.log('----', password, passwordStrength);
+
     IpcUser.updateUser({
       username: user!.username,
       password,

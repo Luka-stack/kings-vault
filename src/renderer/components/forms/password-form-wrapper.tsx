@@ -21,10 +21,12 @@ const PasswordFormWrapper = ({ edit }: Props) => {
     password: string,
     strength: PasswordStrength,
     name?: string,
+    login?: string,
     isPublic?: boolean
   ) => {
     const passwdDto = {
       label: name!,
+      login,
       password,
       strength,
       isPublic: user ? isPublic! : true,
@@ -45,6 +47,7 @@ const PasswordFormWrapper = ({ edit }: Props) => {
         title="Update Password"
         type="password"
         name={passwd.label}
+        login={passwd.login}
         password={decrypted}
         isPublic={passwd.isPublic}
         onSubmit={onSubmit}

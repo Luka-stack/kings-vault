@@ -13,6 +13,10 @@ export const PasswdQueries = {
       type: 'TEXT',
     },
     {
+      name: 'login',
+      type: 'TEXT',
+    },
+    {
       name: 'content',
       type: 'TEXT',
     },
@@ -52,7 +56,7 @@ export const PasswdQueries = {
   },
 
   createPasswd: (
-    { label, strength, isPublic }: CreatePasswdDto,
+    { label, login, strength, isPublic }: CreatePasswdDto,
     { content, iv }: { content: string; iv: string },
     userId: number
   ): string => {
@@ -63,6 +67,7 @@ export const PasswdQueries = {
 
     const values: string[] = [];
     values.push(`'${label}'`);
+    values.push(`'${login}'`);
     values.push(`'${content}'`);
     values.push(`'${iv}'`);
     values.push(`'${strength}'`);
@@ -85,6 +90,7 @@ export const PasswdQueries = {
     passwds.forEach((passwd) => {
       values = [];
       values.push(`'${passwd.label}'`);
+      values.push(`'${passwd.login}`);
       values.push(`'${passwd.content}'`);
       values.push(`'${passwd.iv}'`);
       values.push(`'${passwd.strength}'`);
@@ -114,12 +120,12 @@ export const PasswdQueries = {
 
   updatePasswd: (
     id: number,
-    { label, strength, isPublic }: CreatePasswdDto,
+    { label, login, strength, isPublic }: CreatePasswdDto,
     { content, iv }: { content: string; iv: string }
   ): string => {
     const visibility = isPublic ? '1' : '0';
 
-    return `UPDATE ${PasswdQueries.table} SET label = '${label}', content = '${content}', iv = '${iv}', strength = '${strength}', isPublic = ${visibility}, modified = datetime('now', 'localtime') WHERE id = ${id}`;
+    return `UPDATE ${PasswdQueries.table} SET label = '${label}', login = '${login}', content = '${content}', iv = '${iv}', strength = '${strength}', isPublic = ${visibility}, modified = datetime('now', 'localtime') WHERE id = ${id}`;
   },
 
   deletePassword: (id: number): string => {
@@ -129,7 +135,7 @@ export const PasswdQueries = {
 
 const findWhere = (where: string): string => {
   const passwdFields =
-    'passwds.id, passwds.label, passwds.content, passwds.iv, passwds.strength, passwds.modified, passwds.isPublic';
+    'passwds.id, passwds.label, passwds.login, passwds.content, passwds.iv, passwds.strength, passwds.modified, passwds.isPublic';
   const userFields = 'users.id as userId, users.username';
 
   return `SELECT ${passwdFields}, ${userFields} FROM ${UserQueries.table} as users INNER JOIN ${PasswdQueries.table} as passwds ON passwds.user_id = users.id WHERE ${where}`;
